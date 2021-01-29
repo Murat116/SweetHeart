@@ -17,6 +17,8 @@
 		452D768E25C20887005AC27F /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 452D768D25C20887005AC27F /* Realm */; };
 		452D769125C20893005AC27F /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452D769025C20893005AC27F /* UserModel.swift */; };
 		45366BC925C447C60010ED2C /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BC825C447C60010ED2C /* AvatarView.swift */; };
+		45366BCC25C48B1B0010ED2C /* MainVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCB25C48B1B0010ED2C /* MainVC.swift */; };
+		45366BCF25C48F1A0010ED2C /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCE25C48F1A0010ED2C /* UserCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 		452D768725C2051A005AC27F /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		452D769025C20893005AC27F /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
 		45366BC825C447C60010ED2C /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
+		45366BCB25C48B1B0010ED2C /* MainVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVC.swift; sourceTree = "<group>"; };
+		45366BCE25C48F1A0010ED2C /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +71,8 @@
 				452D766C25C2024B005AC27F /* AppDelegate.swift */,
 				452D766E25C2024B005AC27F /* SceneDelegate.swift */,
 				452D768225C202E5005AC27F /* SignIn.swift */,
+				45366BCB25C48B1B0010ED2C /* MainVC.swift */,
+				45366BCE25C48F1A0010ED2C /* UserCell.swift */,
 				452D768725C2051A005AC27F /* UserSettings.swift */,
 				452D769025C20893005AC27F /* UserModel.swift */,
 				45366BC825C447C60010ED2C /* AvatarView.swift */,
@@ -153,12 +159,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45366BCF25C48F1A0010ED2C /* UserCell.swift in Sources */,
 				452D766D25C2024B005AC27F /* AppDelegate.swift in Sources */,
 				45366BC925C447C60010ED2C /* AvatarView.swift in Sources */,
 				452D768825C2051A005AC27F /* UserSettings.swift in Sources */,
 				452D766F25C2024B005AC27F /* SceneDelegate.swift in Sources */,
 				452D769125C20893005AC27F /* UserModel.swift in Sources */,
 				452D768325C202E5005AC27F /* SignIn.swift in Sources */,
+				45366BCC25C48B1B0010ED2C /* MainVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

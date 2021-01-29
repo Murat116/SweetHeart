@@ -51,9 +51,9 @@ struct Datamanager {
         }
     }()
     
-    var curentUser: UserModel? {
+    var curentUser: UserModel! {
         get{
-            return self.realm?.objects(UserModel.self).filter("\(#keyPath(UserModel.typeInt)) = %@", 0).first
+            return self.realm?.objects(UserModel.self).filter("\(#keyPath(UserModel.typeInt)) = %@", 0).first!
         }
     }
     
