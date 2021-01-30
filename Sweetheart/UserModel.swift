@@ -8,19 +8,20 @@
 import RealmSwift
 import Foundation
 
-@objcMembers
 class UserModel: Object {
-    dynamic var id = UUID().uuidString
-    private(set) dynamic var phone: String = ""
-    dynamic var name: String?
-    dynamic var instagram: String?
-    dynamic var coins: Int = 0 //купленные бабки
-    dynamic var valentines: Int = 0 //твои валентинки
-    dynamic var imageData: Data?
+    @objc dynamic var id = UUID().uuidString
+    @objc private(set) dynamic var phone: String = ""
+    @objc dynamic var name: String?
+    @objc dynamic var instagram: String?
+    @objc dynamic var coins: Int = 0 //купленные бабки
+    @objc dynamic var valentines: Int = 0 //твои валентинки
+    @objc dynamic var imageData: Data?
     
-    dynamic var votes: [String: Int] = [:]
+    @objc dynamic var votesData: Data = Data()
     
-    private(set) dynamic var typeInt: Int = 0
+    var votes: [String: Int] = [:]
+    
+    @objc private(set) dynamic var typeInt: Int = 0
     
     var type: UserType {
         get{
@@ -53,7 +54,7 @@ struct Datamanager {
     
     var curentUser: UserModel! {
         get{
-            return self.realm?.objects(UserModel.self).filter("\(#keyPath(UserModel.typeInt)) = %@", 0).first!
+            return self.realm?.objects(UserModel.self).filter("\(#keyPath(UserModel.typeInt)) = %@", 0).first ?? UserModel()
         }
     }
     

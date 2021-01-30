@@ -19,6 +19,7 @@
 		45366BC925C447C60010ED2C /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BC825C447C60010ED2C /* AvatarView.swift */; };
 		45366BCC25C48B1B0010ED2C /* MainVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCB25C48B1B0010ED2C /* MainVC.swift */; };
 		45366BCF25C48F1A0010ED2C /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCE25C48F1A0010ED2C /* UserCell.swift */; };
+		45366BD225C5B24C0010ED2C /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BD125C5B24C0010ED2C /* UIColor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		45366BC825C447C60010ED2C /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		45366BCB25C48B1B0010ED2C /* MainVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVC.swift; sourceTree = "<group>"; };
 		45366BCE25C48F1A0010ED2C /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
+		45366BD125C5B24C0010ED2C /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,16 +73,25 @@
 				452D766C25C2024B005AC27F /* AppDelegate.swift */,
 				452D766E25C2024B005AC27F /* SceneDelegate.swift */,
 				452D768225C202E5005AC27F /* SignIn.swift */,
-				45366BCB25C48B1B0010ED2C /* MainVC.swift */,
-				45366BCE25C48F1A0010ED2C /* UserCell.swift */,
+				45366BD425C5C48D0010ED2C /* MainVC */,
 				452D768725C2051A005AC27F /* UserSettings.swift */,
 				452D769025C20893005AC27F /* UserModel.swift */,
-				45366BC825C447C60010ED2C /* AvatarView.swift */,
 				452D767525C2024C005AC27F /* Assets.xcassets */,
 				452D767725C2024C005AC27F /* LaunchScreen.storyboard */,
 				452D767A25C2024C005AC27F /* Info.plist */,
+				45366BD125C5B24C0010ED2C /* UIColor.swift */,
 			);
 			path = Sweetheart;
+			sourceTree = "<group>";
+		};
+		45366BD425C5C48D0010ED2C /* MainVC */ = {
+			isa = PBXGroup;
+			children = (
+				45366BCB25C48B1B0010ED2C /* MainVC.swift */,
+				45366BCE25C48F1A0010ED2C /* UserCell.swift */,
+				45366BC825C447C60010ED2C /* AvatarView.swift */,
+			);
+			path = MainVC;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -163,6 +174,7 @@
 				452D766D25C2024B005AC27F /* AppDelegate.swift in Sources */,
 				45366BC925C447C60010ED2C /* AvatarView.swift in Sources */,
 				452D768825C2051A005AC27F /* UserSettings.swift in Sources */,
+				45366BD225C5B24C0010ED2C /* UIColor.swift in Sources */,
 				452D766F25C2024B005AC27F /* SceneDelegate.swift in Sources */,
 				452D769125C20893005AC27F /* UserModel.swift in Sources */,
 				452D768325C202E5005AC27F /* SignIn.swift in Sources */,
