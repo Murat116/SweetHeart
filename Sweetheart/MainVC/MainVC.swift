@@ -115,7 +115,7 @@ class MainVC: UIViewController{
     @objc func openMeView(){
         let vc = UserRegistaration()
         vc.configure(with: self.userModel, state: .view)
-        self.present(vc, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc func openBuy(){
@@ -126,7 +126,7 @@ class MainVC: UIViewController{
     @objc func sendMsg(){
         let vc = FriendsViewController()
 //        let vc = SendHertsVC()
-        self.present(vc, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 }
 

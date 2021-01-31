@@ -8,160 +8,166 @@
 import UIKit
 import ContactsUI
 
-class FriendsViewController: UITableViewController {
-  var friendsList = Friend.defaultContacts()
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    self.tableView.register(FriendCell.self, forCellReuseIdentifier: "FriendCell")
-  }
-  
-  override func viewWillAppear(_ animated: Bool) {
-    super.viewWillAppear(animated)
-    navigationController?.navigationBar.tintColor = .white
-  }
-  
+protocol Conactdelegate: class{
+    func getConact(conact: CNContact)
+}
+
+class FriendsViewController: UIViewController {
+    
+    var tableView = UITableView()
+    
+    weak var delegate: Conactdelegate? = nil
+    
+    var backBtn = UIButton()
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.backgroundColor = .white
+        
+        self.view.addSubview(self.backBtn)
+        self.backBtn.translatesAutoresizingMaskIntoConstraints = false
+        self.backBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 23).isActive = true
+        self.backBtn.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 32).isActive = true
+        self.backBtn.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        self.backBtn.widthAnchor.constraint(equalToConstant: 121).isActive = true
+        
+        self.backBtn.setImage(UIImage(named: "backBtn"), for: .normal)
+        self.backBtn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 23)
+        
+        self.backBtn.setTitle("Назад", for: .normal)
+        self.backBtn.titleLabel?.font = .boldSystemFont(ofSize: 20)
+        self.backBtn.setTitleColor(.black, for: .normal)
+        
+        self.backBtn.addTarget(self, action: #selector(self.back), for: .touchUpInside)
+        
+        self.view.addSubview(self.tableView)
+        self.tableView.translatesAutoresizingMaskIntoConstraints = false
+        self.tableView.topAnchor.constraint(equalTo: self.backBtn.bottomAnchor, constant: 32).isActive = true
+        self.tableView.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 16).isActive = true
+        self.tableView.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -16).isActive = true
+        self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: 0).isActive = true
+        self.tableView.separatorStyle = .none
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        
+        self.tableView.register(FriendCell.self, forCellReuseIdentifier: "FriendCell")
+        
+    }
+    
+    @objc func back(){
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    lazy var contacts: [CNContact] = {
+        var contacts = [CNContact]()
+        
+        let contactStore = CNContactStore()
+        let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactPhoneNumbersKey, CNContactImageDataAvailableKey, CNContactThumbnailImageDataKey]
+        let request = CNContactFetchRequest(keysToFetch: keys as [CNKeyDescriptor])
+        request.sortOrder = CNContactSortOrder.givenName
+        
+        do {
+            try contactStore.enumerateContacts(with: request) {
+                (contact, stop) in
+                contacts.append(contact)
+            }
+        }
+        catch {
+            print("unable to fetch contacts")
+        }
+        
+        
+        return contacts
+    }()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.tintColor = .white
+    }
+    
 }
 
 //MARK: - UITableViewDataSource
-extension FriendsViewController {
-  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return friendsList.count
-  }
-  
-  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath)
-    
-    if let cell = cell as? FriendCell {
-      let friend = friendsList[indexPath.row]
-      cell.friend = friend
+extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return self.contacts.count
     }
     
-    return cell
-  }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath)
+        
+        if let cell = cell as? FriendCell {
+            let contact = self.contacts[indexPath.row]
+            cell.configureCell(with: contact)
+        }
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 54
+    }
 }
 
 //MARK: - UITableViewDelegate
 extension FriendsViewController {
-  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    tableView.deselectRow(at: indexPath, animated: true)
-    // 1
-    let friend = friendsList[indexPath.row]
-    let contact = friend.contactValue
-    // 2
-    let contactViewController = CNContactViewController(forUnknownContact: contact)
-    contactViewController.hidesBottomBarWhenPushed = true
-    contactViewController.allowsEditing = false
-    contactViewController.allowsActions = false
-    // 3
-    navigationController?.navigationBar.tintColor = .blue
-    navigationController?.pushViewController(contactViewController, animated: true)
-  }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.delegate?.getConact(conact: self.contacts[indexPath.row])
+        self.navigationController?.popViewController(animated: true)
+    }
 }
 
 //MARK: - CNContactPickerDelegate
-extension FriendsViewController: CNContactPickerDelegate {
-  func contactPicker(_ picker: CNContactPickerViewController,
-                     didSelect contacts: [CNContact]) {
-    let newFriends = contacts.compactMap { Friend(contact: $0) }
-    for friend in newFriends {
-      if !friendsList.contains(friend) {
-        friendsList.append(friend)
-      }
-    }
-    tableView.reloadData()
-  }
-}
 
-class Friend {
-  let firstName: String
-  let lastName: String
-  let workEmail: String
-  var identifier: String?
-  let profilePicture: UIImage?
-  var storedContact: CNMutableContact?
-  var phoneNumberField: (CNLabeledValue<CNPhoneNumber>)?
-  
-  init(firstName: String, lastName: String, workEmail: String, profilePicture: UIImage?){
-    self.firstName = firstName
-    self.lastName = lastName
-    self.workEmail = workEmail
-    self.profilePicture = profilePicture
-  }
-  
-  static func defaultContacts() -> [Friend] {
-    return [
-      Friend(firstName: "Mic", lastName: "Pringle", workEmail: "mic@example.com", profilePicture: UIImage(named: "MicProfilePicture")),
-      Friend(firstName: "Ray", lastName: "Wenderlich", workEmail: "ray@example.com", profilePicture: UIImage(named: "RayProfilePicture")),
-      Friend(firstName: "Sam", lastName: "Davies", workEmail: "sam@example.com", profilePicture: UIImage(named: "SamProfilePicture")),
-      Friend(firstName: "Greg", lastName: "Heo", workEmail: "greg@example.com", profilePicture: UIImage(named: "GregProfilePicture"))]
-  }
-}
 
-extension Friend: Equatable {
-  static func ==(lhs: Friend, rhs: Friend) -> Bool{
-    return lhs.firstName == rhs.firstName &&
-      lhs.lastName == rhs.lastName &&
-      lhs.workEmail == rhs.workEmail &&
-      lhs.profilePicture == rhs.profilePicture
-  }
-}
 
-extension Friend {
-  var contactValue: CNContact {
-    let contact = CNMutableContact()
-    contact.givenName = firstName
-    contact.familyName = lastName
-    contact.emailAddresses = [CNLabeledValue(label: CNLabelWork, value: workEmail as NSString)]
-    if let profilePicture = profilePicture {
-      let imageData = profilePicture.jpegData(compressionQuality: 1)
-      contact.imageData = imageData
-    }
-    if let phoneNumberField = phoneNumberField {
-      contact.phoneNumbers.append(phoneNumberField)
-    }
-    return contact.copy() as! CNContact
-  }
-  
-  convenience init?(contact: CNContact) {
-    guard let email = contact.emailAddresses.first else { return nil }
-    let firstName = contact.givenName
-    let lastName = contact.familyName
-    let workEmail = email.value as String
-    var profilePicture: UIImage?
-    if let imageData = contact.imageData {
-      profilePicture = UIImage(data: imageData)
-    }
-    self.init(firstName: firstName, lastName: lastName, workEmail: workEmail, profilePicture: profilePicture)
-    if let contactPhone = contact.phoneNumbers.first {
-      phoneNumberField = contactPhone
-    }
-  }
-}
+
 
 class FriendCell: UITableViewCell {
-var contactNameLabel: UILabel!
-  var contactEmailLabel: UILabel!
-  var contactImageView: UIImageView! {
-    didSet {
-      contactImageView.layer.masksToBounds = true
-      contactImageView.layer.cornerRadius = 22.0
+    var contactNameLabel = UILabel()
+    var contactPhome = UILabel()
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.addSubview(self.contactNameLabel)
+        self.contactNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.contactNameLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 8).isActive = true
+        self.contactNameLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 24).isActive = true
+        
+        self.contactNameLabel.font = .boldSystemFont(ofSize: 14)
+        self.contactNameLabel.textColor = .black
+        
+        self.addSubview(self.contactPhome)
+        self.contactPhome.translatesAutoresizingMaskIntoConstraints = false
+        self.contactPhome.topAnchor.constraint(equalTo: self.contactNameLabel.bottomAnchor, constant: 2).isActive = true
+        self.contactPhome.leftAnchor.constraint(equalTo: self.contactNameLabel.leftAnchor).isActive = true
+        
+        self.contactPhome.font = .systemFont(ofSize: 12)
+        self.contactPhome.textColor = UIColor(r: 135, g: 135, b: 135)
+        
     }
-  }
-  
-  var friend : Friend? {
-    didSet {
-      configureCell()
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-  }
-  
-  private func configureCell() {
-    let formatter = CNContactFormatter()
-    formatter.style = .fullName
-    guard let friend = friend,
-      let name = formatter.string(from: friend.contactValue) else { return }
-    contactNameLabel.text = name
-    contactEmailLabel.text = friend.workEmail
-    contactImageView.image = friend.profilePicture ?? UIImage(named: "PlaceholderProfilePic")
-  }
+    
+    
+    func configureCell(with contact : CNContact) {
+        let formatter = CNContactFormatter()
+        formatter.style = .fullName
+        
+        self.contactNameLabel.text = contact.givenName
+        let numbers = contact.phoneNumbers
+        for num in numbers {
+            let numVal = num.value
+            if num.label == CNLabelPhoneNumberMobile {
+                self.contactPhome.text = numVal.stringValue
+                break
+            }
+            self.contactPhome.text = "Nill"
+        }
+    }
+    
+    
 }
