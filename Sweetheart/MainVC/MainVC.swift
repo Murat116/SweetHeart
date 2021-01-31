@@ -77,10 +77,12 @@ class MainVC: UIViewController{
         self.view.addSubview(self.tableView)
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
         self.tableView.topAnchor.constraint(equalTo: self.topLabel.bottomAnchor, constant: 21).isActive = true
-        self.tableView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
-        self.tableView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+        self.tableView.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 16).isActive = true
+        self.tableView.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -16).isActive = true
         self.tableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
         
+        self.tableView.separatorStyle = .none
+        self.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 80, right: 0)
         self.tableView.register(UserCell.self, forCellReuseIdentifier: "userCell")
         
         self.tableView.delegate = self
@@ -88,7 +90,24 @@ class MainVC: UIViewController{
         
         self.view.addSubview(self.sendBtn)
         self.sendBtn.translatesAutoresizingMaskIntoConstraints = false
+        self.sendBtn.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -36).isActive = true
+        self.sendBtn.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 93).isActive = true
+        self.sendBtn.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -93).isActive = true
+        self.sendBtn.heightAnchor.constraint(equalTo: self.sendBtn.widthAnchor, multiplier: 0.3).isActive = true
         
+        self.sendBtn.backgroundColor = UIColor(r: 255, g: 95, b: 41)
+        self.sendBtn.layer.cornerRadius = 10
+        self.sendBtn.semanticContentAttribute = .forceRightToLeft
+        
+        self.sendBtn.setTitle("Отправить", for: .normal)
+        self.sendBtn.setTitleColor(UIColor(r: 255, g: 248, b: 235), for: .normal)
+        
+        self.sendBtn.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.sendBtn.imageView?.tintColor = UIColor(r: 255, g: 248, b: 235)
+        self.sendBtn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
+
+        self.sendBtn.addTarget(self, action: #selector(self.sendMsg), for: .touchUpInside)
+
         self.view.layoutIfNeeded()
         self.meBtn.layer.cornerRadius = self.meBtn.frame.height / 2
     }
@@ -100,7 +119,14 @@ class MainVC: UIViewController{
     }
     
     @objc func openBuy(){
-        
+        let vc = BuyVC()
+        self.present(vc, animated: true)
+    }
+    
+    @objc func sendMsg(){
+        let vc = FriendsViewController()
+//        let vc = SendHertsVC()
+        self.present(vc, animated: true)
     }
 }
 
@@ -111,7 +137,7 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "userCell") as? UserCell else { return UITableViewCell()}
-        cell.configure(with: UserModel(), number: indexPath.row)
+        cell.configure(with: self.userModel, number: indexPath.row)
         return cell
     }
     

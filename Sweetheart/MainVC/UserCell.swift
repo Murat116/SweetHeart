@@ -19,6 +19,8 @@ class UserCell: UITableViewCell{
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
     
+        self.selectionStyle = .none
+        
         self.addSubview(self.avatar)
         self.avatar.translatesAutoresizingMaskIntoConstraints = false
         self.avatar.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
@@ -85,7 +87,18 @@ class UserCell: UITableViewCell{
         self.number.text = String(number + 1)
         self.name.text = model.name ?? "Ivan"
         self.instagram.text = model.name ?? "@Ivan_test"
-        self.likes.text = String(15)//model.valentines) 
+        self.likes.text = String(15)//model.valentines)
+        
+        if number == 4 || model.id == Datamanager.shared.curentUser.id {
+            self.layer.cornerRadius = 11
+            self.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+            self.name.textColor = UIColor(r: 255, g: 95, b: 41)
+            self.instagram.textColor = UIColor(r: 252, g: 154, b: 124)
+        }else{
+            self.backgroundColor = .white
+            self.instagram.textColor = UIColor(r: 135, g: 135, b: 135, a: 1)
+            self.name.textColor = .black
+        }
     }
 }
 
