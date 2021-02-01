@@ -33,7 +33,7 @@ class UserModel: Object {
         }
     }
     
-    fileprivate static func createUser(phone: String, type: UserType) -> UserModel{
+     static func createUser(phone: String, type: UserType) -> UserModel{
         let user = UserModel()
         user.phone = phone
         user.type = type
