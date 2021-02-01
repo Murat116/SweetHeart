@@ -15,6 +15,7 @@ class UserModel: Object {
     @objc dynamic var instagram: String?
     @objc dynamic var coins: Int = 0 //купленные бабки
     @objc dynamic var valentines: Int = 0 //твои валентинки
+    @objc dynamic var placeInTop: Int = 0
     @objc dynamic var imageData: Data?
     
     @objc dynamic var votesData: Data = Data()
@@ -32,7 +33,7 @@ class UserModel: Object {
         }
     }
     
-    fileprivate static func createUser(phone: String, type: UserType) -> UserModel{
+     static func createUser(phone: String, type: UserType) -> UserModel{
         let user = UserModel()
         user.phone = phone
         user.type = type
@@ -82,6 +83,16 @@ struct Datamanager {
             }
         }catch{
             print(error)
+        }
+    }
+    
+    internal  func updateProperty(of user: UserModel, value: Any, for key: String){
+        do{
+            try self.realm?.write {
+                user.setValue(value, forKey: key)
+            }
+        }catch{
+            print(error.localizedDescription)
         }
     }
     

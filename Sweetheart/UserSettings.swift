@@ -11,6 +11,10 @@ class UserRegistaration: UIViewController {
     var backBtn = UIButton()
     
     var avatarView = UIImageView()
+    var avatarBtn = UIButton()
+    var topAvatar: NSLayoutConstraint? = nil
+    var needUp: Bool = false
+    
     var name = UILabel()
     var insta = UILabel()
     
@@ -26,14 +30,18 @@ class UserRegistaration: UIViewController {
     var coppy = UIButton()
     var cancel = UIButton()
     
-    var userModel: UserModel!
+    var userModel: UserModel = Datamanager.shared.curentUser
     
-    var state: VCState = .edit {
+    var isUserInit = false
+    
+    var state: VCState = .view {
         didSet{
-            self.saveBtn.isHidden = self.state == .edit
-            //            self.editBtn.isHidden = self.state != .edit
-            self.nameField.allowsEditingTextAttributes = self.state != .edit
-            self.instField.allowsEditingTextAttributes = self.state != .edit
+            self.nameField.isUserInteractionEnabled = self.state == .edit
+            self.instField.isUserInteractionEnabled = self.state == .edit
+            self.nameField.text?.removeAll()
+            self.instField.text?.removeAll()
+            self.nameField.attributedPlaceholder = NSAttributedString(string: self.userModel.name ?? "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+            self.instField.attributedPlaceholder = NSAttributedString(string: self.userModel.instagram ?? "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         }
     }
     
@@ -61,11 +69,26 @@ class UserRegistaration: UIViewController {
         self.view.addSubview(self.avatarView)
         self.avatarView.translatesAutoresizingMaskIntoConstraints = false
         self.avatarView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
-        self.avatarView.topAnchor.constraint(equalTo: self.backBtn.bottomAnchor, constant: 47).isActive = true
+        self.topAvatar = self.avatarView.topAnchor.constraint(equalTo: self.backBtn.bottomAnchor, constant: 47)
+        self.topAvatar?.isActive = true
         self.avatarView.heightAnchor.constraint(equalToConstant: 88).isActive = true
         self.avatarView.widthAnchor.constraint(equalToConstant: 88).isActive = true
         
-        self.avatarView.image = UIImage(named: "testPhoto")
+        self.avatarView.contentMode = .scaleToFill
+        self.avatarView.layer.masksToBounds = false
+        self.avatarView.clipsToBounds = true
+        
+        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
+        self.avatarView.image = image
+        
+        self.view.addSubview(self.avatarBtn)
+        self.avatarBtn.translatesAutoresizingMaskIntoConstraints = false
+        self.avatarBtn.topAnchor.constraint(equalTo: self.avatarView.topAnchor).isActive = true
+        self.avatarBtn.leftAnchor.constraint(equalTo: self.avatarView.leftAnchor).isActive = true
+        self.avatarBtn.rightAnchor.constraint(equalTo: self.avatarView.rightAnchor).isActive = true
+        self.avatarBtn.bottomAnchor.constraint(equalTo: self.avatarView.bottomAnchor).isActive = true
+        
+        self.avatarBtn.addTarget(self, action: #selector(self.openPicker), for: .touchUpInside)
         
         self.view.addSubview(self.name)
         self.name.translatesAutoresizingMaskIntoConstraints = false
@@ -76,7 +99,7 @@ class UserRegistaration: UIViewController {
         self.name.font = .boldSystemFont(ofSize: 24)
         self.name.textColor = .black
         self.name.textAlignment = .center
-        self.name.text = "Саня"
+        self.name.text = self.userModel.name ?? "User name"
         
         self.view.addSubview(self.insta)
         self.insta.translatesAutoresizingMaskIntoConstraints = false
@@ -86,7 +109,7 @@ class UserRegistaration: UIViewController {
         
         self.insta.font = .systemFont(ofSize: 14)
         self.insta.textColor = UIColor(r: 114, g: 114, b: 114)
-        self.insta.text = "@pepa_desh"
+        self.insta.text = self.userModel.instagram ?? "User instagram"
         
         self.view.addSubview(self.place)
         self.place.translatesAutoresizingMaskIntoConstraints = false
@@ -97,9 +120,9 @@ class UserRegistaration: UIViewController {
         
         self.place.setImage(UIImage(named: "Star"), for: .normal)
         self.place.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4)
-        
+       
         self.place.titleLabel?.font = .systemFont(ofSize: 14)
-        self.place.setTitle("4 место", for: .normal)
+        self.place.setTitle("\(self.userModel.placeInTop) место", for: .normal)
         self.place.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         
         self.view.addSubview(self.hearts)
@@ -113,7 +136,7 @@ class UserRegistaration: UIViewController {
         self.hearts.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4)
         
         self.hearts.titleLabel?.font = .systemFont(ofSize: 14)
-        self.hearts.setTitle("15", for: .normal)
+        self.hearts.setTitle(String(self.userModel.valentines), for: .normal)
         self.hearts.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         
         self.view.addSubview(self.nameField)
@@ -124,9 +147,10 @@ class UserRegistaration: UIViewController {
         self.nameField.heightAnchor.constraint(equalToConstant: 56).isActive = true
         
         self.nameField.backgroundColor = UIColor(r: 247, g: 247, b: 247)
-        self.nameField.attributedPlaceholder = NSAttributedString(string: "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+        self.nameField.attributedPlaceholder = NSAttributedString(string: self.userModel.name ?? "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.nameField.setLeftPaddingPoints(24)
         self.nameField.layer.cornerRadius = 7
+        self.nameField.delegate = self
         
         self.view.addSubview(self.instField)
         self.instField.translatesAutoresizingMaskIntoConstraints = false
@@ -137,9 +161,10 @@ class UserRegistaration: UIViewController {
         
         
         self.instField.backgroundColor = UIColor(r: 247, g: 247, b: 247)
-        self.instField.attributedPlaceholder = NSAttributedString(string: "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+        self.instField.attributedPlaceholder = NSAttributedString(string: self.userModel.instagram ?? "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.instField.setLeftPaddingPoints(24)
         self.instField.layer.cornerRadius = 7
+        self.instField.delegate = self
         
         
         self.view.addSubview(self.editbtn)
@@ -153,6 +178,7 @@ class UserRegistaration: UIViewController {
         self.editbtn.titleLabel?.font = .systemFont(ofSize: 16)
         self.editbtn.setTitle("Изменить данные", for: .normal)
         self.editbtn.layer.cornerRadius = 7
+        self.editbtn.isHidden = self.state == .edit
         
         self.editbtn.addTarget(self, action: #selector(self.edit(btn:)), for: .touchUpInside)
         
@@ -167,7 +193,7 @@ class UserRegistaration: UIViewController {
         self.saveBtn.titleLabel?.font = .systemFont(ofSize: 16)
         self.saveBtn.setTitle("Сохранить", for: .normal)
         self.saveBtn.layer.cornerRadius = 8
-        self.saveBtn.isHidden = true
+        self.saveBtn.isHidden = self.state != .edit
         
         self.saveBtn.addTarget(self, action: #selector(self.save), for: .touchUpInside)
         
@@ -180,12 +206,12 @@ class UserRegistaration: UIViewController {
         
         self.cancel.backgroundColor = UIColor(r: 255, g: 239, b: 234)
         self.cancel.titleLabel?.font = .systemFont(ofSize: 16)
-        self.cancel.setTitle("Отмена", for: .normal)
+        self.cancel.setTitle(self.state == .edit ? "Пропустить" : "Отмена", for: .normal)
         self.cancel.layer.cornerRadius = 8
         self.cancel.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         
         self.cancel.addTarget(self, action: #selector(self.edit(btn:)), for: .touchUpInside)
-        self.cancel.isHidden = true
+        self.cancel.isHidden = self.state != .edit
         
         self.view.addSubview(self.coppy)
         self.coppy.translatesAutoresizingMaskIntoConstraints = false
@@ -201,20 +227,66 @@ class UserRegistaration: UIViewController {
         self.coppy.setImage(UIImage(named: "Coppy"), for: .normal)
         self.coppy.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4)
         
+        self.coppy.addTarget(self, action: #selector(self.coppyAction), for: .touchUpInside)
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.hideKeyboard))
+        self.view.addGestureRecognizer(tap)
+        
+        self.view.layoutIfNeeded()
+        self.avatarView.layer.cornerRadius = self.avatarView.frame.height / 2
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
     }
     
-    func configure(with model: UserModel, state: VCState){
-        self.userModel = model
-        if state == .edit{
-            self.nameField.text = model.name
-            self.instField.text = model.instagram
-        }else{
-            
-        }
+    @objc func coppyAction(){
+        UIPasteboard.general.string = Datamanager.shared.curentUser.id
+    }
+    
+    @objc func openPicker(){
+        let imagePickerController = UIImagePickerController()
+        
+        imagePickerController.delegate = self
+        imagePickerController.sourceType = UIImagePickerController.SourceType.photoLibrary
+        imagePickerController.allowsEditing = true
+        
+        self.present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+            let keyboardRectangle = keyboardFrame.cgRectValue
+            let keyboardHeight = keyboardRectangle.height
+        guard self.instField.frame.maxY + keyboardHeight > self.view.frame.height else { return }
+        self.topAvatar?.constant -= 80
+        self.needUp = true
+    }
+    
+    @objc func hideKeyboard(){
+        self.nameField.resignFirstResponder()
+        self.instField.resignFirstResponder()
+        guard self.needUp else { return }
+        self.needUp = false
+        self.topAvatar?.constant += 80
+    }
+    
+    func configure(state: VCState, isUserInit: Bool = false){
+        self.isUserInit = isUserInit
+        self.state = state
     }
     
     @objc func edit(btn: UIButton){
+        guard !self.isUserInit else {
+            let vc = MainVC()
+            UIApplication.shared.windows.first?.rootViewController = vc
+            return
+        }
         UIView.animate(withDuration: 0.2) {
+            self.state =  btn == self.editbtn ? .edit : .view
             self.saveBtn.isHidden = btn != self.editbtn
             self.cancel.isHidden = btn != self.editbtn
             self.editbtn.isHidden = btn == self.editbtn
@@ -222,13 +294,63 @@ class UserRegistaration: UIViewController {
     }
     
     @objc func save(){
-        self.userModel.name = self.nameField.text
-        self.userModel.instagram = self.instField.text
-        self.userModel.imageData = self.avatarView.image?.pngData()
+        let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
+        let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
+        Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
+        Datamanager.shared.updateProperty(of: self.userModel, value: insta, for: #keyPath(UserModel.instagram))
+        Datamanager.shared.updateProperty(of: self.userModel, value: self.avatarView.image?.pngData() as Any, for: #keyPath(UserModel.imageData))
+        self.saveBtn.isHidden = true
+        self.cancel.isHidden = true
+        self.editbtn.isHidden = false
+        self.state = .view
+        guard self.isUserInit else { return }
+        let vc = MainVC()
+        UIApplication.shared.windows.first?.rootViewController = vc
     }
     
     @objc func back(){
         self.navigationController?.popViewController(animated: true)
+    }
+    
+}
+
+extension UserRegistaration: UITextFieldDelegate{
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        if textField == self.nameField {
+            self.name.text = textField.text
+        }else{
+            self.insta.text = textField.text
+        }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == self.nameField {
+            self.name.text = textField.text
+        }else{
+            self.insta.text = textField.text
+        }
+        return true
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+    }
+}
+
+extension UserRegistaration: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController,
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        
+        if let image = info[.editedImage] as? UIImage {
+            self.avatarView.image = image
+            self.view.layoutIfNeeded()
+            self.avatarView.layer.cornerRadius = self.avatarView.frame.height / 2
+        }
+        
+        picker.dismiss(animated: true, completion: nil)
+    }
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated:  true, completion: nil)
     }
     
 }

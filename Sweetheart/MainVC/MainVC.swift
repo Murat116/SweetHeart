@@ -45,8 +45,15 @@ class MainVC: UIViewController{
         self.meBtn.widthAnchor.constraint(equalTo: self.meBtn.heightAnchor).isActive = true
         
         self.meBtn.addTarget(self, action: #selector(self.openMeView), for: .touchUpInside)
-        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "testPhoto")
+        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.meBtn.setImage(image, for: .normal)
+    
+        self.meBtn.contentEdgeInsets = .zero
+        self.meBtn.imageView?.contentMode = .scaleAspectFit
+        self.meBtn.layer.masksToBounds = true
+        
+        self.meBtn.imageView!.bounds = self.meBtn.imageView!.frame
+        self.meBtn.imageView!.layer.cornerRadius = self.meBtn.imageView!.frame.size.width / 2
         
         self.view.addSubview(self.balance)
         self.balance.translatesAutoresizingMaskIntoConstraints = false
@@ -61,7 +68,7 @@ class MainVC: UIViewController{
         self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 0)
         self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
         
-        self.balance.setTitle("1", for: .normal)
+        self.balance.setTitle("\(self.userModel.coins)", for: .normal)
         self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
         self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
         
@@ -114,7 +121,7 @@ class MainVC: UIViewController{
     
     @objc func openMeView(){
         let vc = UserRegistaration()
-        vc.configure(with: self.userModel, state: .view)
+        vc.configure(state: .view)
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -136,7 +143,8 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "userCell") as? UserCell else { return UITableViewCell()}
-        cell.configure(with: self.userModel, number: indexPath.row)
+        let user = indexPath.row % 23 == 0 ? self.userModel : UserModel()
+        cell.configure(with: user, number: indexPath.row)
         return cell
     }
     

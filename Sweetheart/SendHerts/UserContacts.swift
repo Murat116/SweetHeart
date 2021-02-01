@@ -119,6 +119,7 @@ extension FriendsViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.row != 0 else {
             self.delegate?.getConact(name: Datamanager.shared.curentUser.name ?? "User", phone: Datamanager.shared.curentUser.phone)
+            self.navigationController?.popViewController(animated: true)
             return
         }
         let contact = self.contacts[indexPath.row - 1]
