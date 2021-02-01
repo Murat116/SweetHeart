@@ -9,8 +9,8 @@ import UIKit
 
 class UserRegistaration: UIViewController {
     var backBtn = UIButton()
-    var avatarView = UIImageView()
     
+    var avatarView = UIImageView()
     var name = UILabel()
     var insta = UILabel()
     

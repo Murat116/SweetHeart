@@ -124,8 +124,7 @@ class MainVC: UIViewController{
     }
     
     @objc func sendMsg(){
-        let vc = FriendsViewController()
-//        let vc = SendHertsVC()
+        let vc = SendHertsVC()
         self.navigationController?.pushViewController(vc, animated: true)
     }
 }
