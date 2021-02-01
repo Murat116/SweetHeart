@@ -32,9 +32,10 @@ class UserModel: Object {
         }
     }
     
-    static func createUser(phone: String) -> UserModel{
+    fileprivate static func createUser(phone: String, type: UserType) -> UserModel{
         let user = UserModel()
         user.phone = phone
+        user.type = type
         return user
     }
 }
@@ -70,6 +71,17 @@ struct Datamanager {
             var array = Array(usersSet)
             array.sort{$0.valentines > $1.valentines}
             return array
+        }
+    }
+    
+    func createUser(with phone: String, type: UserType){
+        let user = UserModel.createUser(phone: phone, type: type)
+        do{
+            try realm?.write{
+                self.realm?.add(user)
+            }
+        }catch{
+            print(error)
         }
     }
     

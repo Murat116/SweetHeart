@@ -92,6 +92,22 @@ class SendHertsVC: UIViewController{
         self.backBtn.setTitleColor(.black, for: .normal)
         self.backBtn.addTarget(self, action: #selector(self.back), for: .touchUpInside)
         
+        self.view.addSubview(self.balance)
+        self.balance.translatesAutoresizingMaskIntoConstraints = false
+        self.balance.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 19).isActive = true
+        self.balance.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
+        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
+        
+        self.balance.contentHorizontalAlignment = .right
+        self.balance.semanticContentAttribute = .forceRightToLeft
+        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -3)
+        self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
+        
+        self.balance.setTitle(String(self.maxHerts), for: .normal)
+        self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
+        //        self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
+        
         self.view.addSubview(self.avatarView)
         self.avatarView.translatesAutoresizingMaskIntoConstraints = false
         self.avatarView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
@@ -123,23 +139,6 @@ class SendHertsVC: UIViewController{
         self.insta.font = .systemFont(ofSize: 14)
         self.insta.textColor = UIColor(r: 114, g: 114, b: 114)
         self.insta.isHidden = true
-        
-        
-        self.view.addSubview(self.balance)
-        self.balance.translatesAutoresizingMaskIntoConstraints = false
-        self.balance.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 19).isActive = true
-        self.balance.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
-        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
-        
-        self.balance.contentHorizontalAlignment = .right
-        self.balance.semanticContentAttribute = .forceRightToLeft
-        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -3)
-        self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
-        
-        self.balance.setTitle(String(self.maxHerts), for: .normal)
-        self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
-        //        self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
         
         self.view.addSubview(self.sendTypeLabel)
         self.sendTypeLabel.translatesAutoresizingMaskIntoConstraints = false

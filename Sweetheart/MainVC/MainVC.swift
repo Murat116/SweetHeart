@@ -120,7 +120,7 @@ class MainVC: UIViewController{
     
     @objc func openBuy(){
         let vc = BuyVC()
-        self.present(vc, animated: true)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc func sendMsg(){
