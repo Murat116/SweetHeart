@@ -25,9 +25,12 @@ class UserCell: UITableViewCell{
         self.avatar.translatesAutoresizingMaskIntoConstraints = false
         self.avatar.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
         self.avatar.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 38).isActive = true
-        self.avatar.topAnchor.constraint(equalTo: self.topAnchor, constant: 8).isActive = true
-        self.avatar.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8).isActive = true
+        self.avatar.heightAnchor.constraint(equalToConstant: 60).isActive = true
         self.avatar.widthAnchor.constraint(equalTo: self.avatar.heightAnchor).isActive = true
+        
+        self.avatar.contentMode = .scaleToFill
+        self.avatar.layer.masksToBounds = false
+        self.avatar.clipsToBounds = true
         
         self.addSubview(self.number)
         self.number.translatesAutoresizingMaskIntoConstraints = false
@@ -73,8 +76,6 @@ class UserCell: UITableViewCell{
         self.likes.font = UIFont.systemFont(ofSize: 12)
         self.likes.textColor = UIColor(r: 255, g: 95, b: 45, a: 1)
         
-        self.layoutIfNeeded()
-        self.avatar.layer.cornerRadius = self.avatar.frame.height / 2
     }
     
     required init?(coder: NSCoder) {
@@ -82,16 +83,16 @@ class UserCell: UITableViewCell{
     }
     
     func configure(with model: UserModel, number: Int){
-        let image = model.imageData != nil ? UIImage(data: model.imageData!) : UIImage(named: "testPhoto")
+        let image = model.imageData != nil ? UIImage(data: model.imageData!) : UIImage(named: "avatar")
         self.avatar.image = image
         self.number.text = String(number + 1)
-        self.name.text = model.name ?? "Ivan"
-        self.instagram.text = model.name ?? "@Ivan_test"
-        self.likes.text = String(15)//model.valentines)
+        self.name.text = model.name ?? "User"
+        self.instagram.text = model.instagram ?? "empty"
+        self.likes.text = String(model.valentines)
         
-        if number == 4 || model.id == Datamanager.shared.curentUser.id {
+        if model.id == Datamanager.shared.curentUser.id || number < 3{
             self.layer.cornerRadius = 11
-            self.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+            self.backgroundColor =  model.id == Datamanager.shared.curentUser.id ? UIColor(r: 255, g: 239, b: 234) : .white
             self.name.textColor = UIColor(r: 255, g: 95, b: 41)
             self.instagram.textColor = UIColor(r: 252, g: 154, b: 124)
         }else{
@@ -99,6 +100,8 @@ class UserCell: UITableViewCell{
             self.instagram.textColor = UIColor(r: 135, g: 135, b: 135, a: 1)
             self.name.textColor = .black
         }
+        self.layoutIfNeeded()
+        self.avatar.layer.cornerRadius = self.avatar.frame.width / 2
     }
 }
 

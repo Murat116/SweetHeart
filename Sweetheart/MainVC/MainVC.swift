@@ -47,6 +47,13 @@ class MainVC: UIViewController{
         self.meBtn.addTarget(self, action: #selector(self.openMeView), for: .touchUpInside)
         let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.meBtn.setImage(image, for: .normal)
+    
+        self.meBtn.contentEdgeInsets = .zero
+        self.meBtn.imageView?.contentMode = .scaleAspectFit
+        self.meBtn.layer.masksToBounds = true
+        
+        self.meBtn.imageView!.bounds = self.meBtn.imageView!.frame
+        self.meBtn.imageView!.layer.cornerRadius = self.meBtn.imageView!.frame.size.width / 2
         
         self.view.addSubview(self.balance)
         self.balance.translatesAutoresizingMaskIntoConstraints = false
@@ -114,7 +121,7 @@ class MainVC: UIViewController{
     
     @objc func openMeView(){
         let vc = UserRegistaration()
-        vc.configure(with: self.userModel, state: .view)
+        vc.configure(state: .view)
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -136,7 +143,8 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "userCell") as? UserCell else { return UITableViewCell()}
-        cell.configure(with: self.userModel, number: indexPath.row)
+        let user = indexPath.row % 23 == 0 ? self.userModel : UserModel()
+        cell.configure(with: user, number: indexPath.row)
         return cell
     }
     

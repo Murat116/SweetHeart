@@ -30,12 +30,18 @@ class UserRegistaration: UIViewController {
     var coppy = UIButton()
     var cancel = UIButton()
     
-    var userModel: UserModel!
+    var userModel: UserModel = Datamanager.shared.curentUser
     
-    var state: VCState = .edit {
+    var isUserInit = false
+    
+    var state: VCState = .view {
         didSet{
-//            self.nameField.allowsEditingTextAttributes = self.state != .edit
-//            self.instField.allowsEditingTextAttributes = self.state != .edit
+            self.nameField.isUserInteractionEnabled = self.state == .edit
+            self.instField.isUserInteractionEnabled = self.state == .edit
+            self.nameField.text?.removeAll()
+            self.instField.text?.removeAll()
+            self.nameField.attributedPlaceholder = NSAttributedString(string: self.userModel.name ?? "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+            self.instField.attributedPlaceholder = NSAttributedString(string: self.userModel.instagram ?? "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         }
     }
     
@@ -141,7 +147,7 @@ class UserRegistaration: UIViewController {
         self.nameField.heightAnchor.constraint(equalToConstant: 56).isActive = true
         
         self.nameField.backgroundColor = UIColor(r: 247, g: 247, b: 247)
-        self.nameField.attributedPlaceholder = NSAttributedString(string: "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+        self.nameField.attributedPlaceholder = NSAttributedString(string: self.userModel.name ?? "Name", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.nameField.setLeftPaddingPoints(24)
         self.nameField.layer.cornerRadius = 7
         self.nameField.delegate = self
@@ -155,7 +161,7 @@ class UserRegistaration: UIViewController {
         
         
         self.instField.backgroundColor = UIColor(r: 247, g: 247, b: 247)
-        self.instField.attributedPlaceholder = NSAttributedString(string: "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+        self.instField.attributedPlaceholder = NSAttributedString(string: self.userModel.instagram ?? "Instagram", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.instField.setLeftPaddingPoints(24)
         self.instField.layer.cornerRadius = 7
         self.instField.delegate = self
@@ -221,6 +227,8 @@ class UserRegistaration: UIViewController {
         self.coppy.setImage(UIImage(named: "Coppy"), for: .normal)
         self.coppy.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4)
         
+        self.coppy.addTarget(self, action: #selector(self.coppyAction), for: .touchUpInside)
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.hideKeyboard))
         self.view.addGestureRecognizer(tap)
         
@@ -233,6 +241,10 @@ class UserRegistaration: UIViewController {
             name: UIResponder.keyboardWillShowNotification,
             object: nil
         )
+    }
+    
+    @objc func coppyAction(){
+        UIPasteboard.general.string = Datamanager.shared.curentUser.id
     }
     
     @objc func openPicker(){
@@ -262,18 +274,19 @@ class UserRegistaration: UIViewController {
         self.topAvatar?.constant += 80
     }
     
-    func configure(with model: UserModel, state: VCState){
-        self.userModel = model
-        self.state = .edit
+    func configure(state: VCState, isUserInit: Bool = false){
+        self.isUserInit = isUserInit
+        self.state = state
     }
     
     @objc func edit(btn: UIButton){
-        guard self.state != .edit else {
+        guard !self.isUserInit else {
             let vc = MainVC()
             UIApplication.shared.windows.first?.rootViewController = vc
             return
         }
         UIView.animate(withDuration: 0.2) {
+            self.state =  btn == self.editbtn ? .edit : .view
             self.saveBtn.isHidden = btn != self.editbtn
             self.cancel.isHidden = btn != self.editbtn
             self.editbtn.isHidden = btn == self.editbtn
@@ -281,9 +294,16 @@ class UserRegistaration: UIViewController {
     }
     
     @objc func save(){
-        Datamanager.shared.updateProperty(of: self.userModel, value: self.nameField.text ?? "User", for: #keyPath(UserModel.name))
-        Datamanager.shared.updateProperty(of: self.userModel, value: self.instField.text ?? "Hello friends", for: #keyPath(UserModel.instagram))
+        let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
+        let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
+        Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
+        Datamanager.shared.updateProperty(of: self.userModel, value: insta, for: #keyPath(UserModel.instagram))
         Datamanager.shared.updateProperty(of: self.userModel, value: self.avatarView.image?.pngData() as Any, for: #keyPath(UserModel.imageData))
+        self.saveBtn.isHidden = true
+        self.cancel.isHidden = true
+        self.editbtn.isHidden = false
+        self.state = .view
+        guard self.isUserInit else { return }
         let vc = MainVC()
         UIApplication.shared.windows.first?.rootViewController = vc
     }
@@ -310,6 +330,10 @@ extension UserRegistaration: UITextFieldDelegate{
             self.insta.text = textField.text
         }
         return true
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
     }
 }
 
