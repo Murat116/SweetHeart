@@ -45,7 +45,7 @@ class MainVC: UIViewController{
         self.meBtn.widthAnchor.constraint(equalTo: self.meBtn.heightAnchor).isActive = true
         
         self.meBtn.addTarget(self, action: #selector(self.openMeView), for: .touchUpInside)
-        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "testPhoto")
+        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.meBtn.setImage(image, for: .normal)
         
         self.view.addSubview(self.balance)
@@ -61,7 +61,7 @@ class MainVC: UIViewController{
         self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 0)
         self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
         
-        self.balance.setTitle("1", for: .normal)
+        self.balance.setTitle("\(self.userModel.coins)", for: .normal)
         self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
         self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
         
