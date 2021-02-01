@@ -9,7 +9,7 @@ import UIKit
 import ContactsUI
 
 protocol Conactdelegate: class{
-    func getConact(conact: CNContact)
+    func getConact(name: String, phone: String)
 }
 
 class FriendsViewController: UIViewController {
@@ -91,15 +91,19 @@ class FriendsViewController: UIViewController {
 //MARK: - UITableViewDataSource
 extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.contacts.count
+        return self.contacts.count + 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath)
         
         if let cell = cell as? FriendCell {
-            let contact = self.contacts[indexPath.row]
-            cell.configureCell(with: contact)
+            if indexPath.row == 0 {
+                cell.configureCell(isMe: true, with: CNContact())
+            }else{
+                let contact = self.contacts[indexPath.row - 1]
+                cell.configureCell(isMe: false, with: contact)
+            }
         }
         
         return cell
@@ -113,7 +117,29 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
 //MARK: - UITableViewDelegate
 extension FriendsViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.delegate?.getConact(conact: self.contacts[indexPath.row])
+        guard indexPath.row != 0 else {
+            self.delegate?.getConact(name: Datamanager.shared.curentUser.name ?? "User", phone: Datamanager.shared.curentUser.phone)
+            return
+        }
+        let contact = self.contacts[indexPath.row - 1]
+        var phone: String? = nil
+        for num in contact.phoneNumbers {
+            let numVal = num.value
+            if num.label == CNLabelPhoneNumberMobile {
+                phone = numVal.stringValue
+                break
+            }
+        }
+        
+        guard phone != nil else {
+            let alert = UIAlertController(title: "Не получается извлечь номер", message: "Попробуйте позже или введите номер вручную", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        
+        self.delegate?.getConact(name: contact.givenName, phone: phone!)
         self.navigationController?.popViewController(animated: true)
     }
 }
@@ -153,7 +179,13 @@ class FriendCell: UITableViewCell {
     }
     
     
-    func configureCell(with contact : CNContact) {
+    func configureCell(isMe: Bool, with contact : CNContact) {
+        guard !isMe else {
+            self.contactNameLabel.text = "Себе 😈"
+            self.contactPhome.text = Datamanager.shared.curentUser.phone
+            return
+        }
+        
         let formatter = CNContactFormatter()
         formatter.style = .fullName
         

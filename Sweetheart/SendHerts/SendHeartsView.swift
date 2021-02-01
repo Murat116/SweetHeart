@@ -31,21 +31,14 @@ class SendHertsVC: UIViewController{
     var plusBtn = UIButton()
     var minusBtn = UIButton()
     
-    var maxHerts: Int = 10
-    
+    var maxHerts: Int = 1 //test
+    var isFree: Bool = false //test
+ 
     var countLabel = UILabel()
-    var countHerts: Int = 1 {
+    var countHerts: Int = -1 {
         didSet{
-            guard self.countHerts != 0 && self.countHerts <= self.maxHerts else { self.countHerts = oldValue; return }
-            self.countLabel.text = String(self.countHerts)
-            self.sendBtn.setTitle("Отправить \(self.countHerts)", for: .normal)
-            if self.countHerts == 1 {
-                self.minusBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
-            }
-            
-            self.minusBtn.backgroundColor = self.countHerts == 1 ? UIColor(r: 247, g: 247, b: 247) :  UIColor(r: 255, g: 239, b: 234)
-            self.plusBtn.backgroundColor = self.countHerts == self.maxHerts ? UIColor(r: 247, g: 247, b: 247) : UIColor(r: 255, g: 239, b: 234)
-            
+            guard self.countHerts != oldValue else { return }
+            self.checkColors(oldValue: oldValue)
         }
     }
     
@@ -73,6 +66,9 @@ class SendHertsVC: UIViewController{
                 self.phomeTypeBtn.backgroundColor = UIColor(r: 255, g: 219, b: 208)
                 self.phomeTypeBtn.setTitleColor(UIColor(r: 222, g: 65, b: 16), for: .normal)
             }
+            self.avatarView.image = UIImage(named: "avatar")
+            self.insta.isHidden = true
+            self.name.isHidden = true
         }
     }
     
@@ -138,10 +134,10 @@ class SendHertsVC: UIViewController{
         
         self.balance.contentHorizontalAlignment = .right
         self.balance.semanticContentAttribute = .forceRightToLeft
-        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 0)
+        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -3)
         self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
         
-        self.balance.setTitle("1", for: .normal)
+        self.balance.setTitle(String(self.maxHerts), for: .normal)
         self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
         //        self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
         
@@ -217,15 +213,14 @@ class SendHertsVC: UIViewController{
         self.sendBtn.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.sendBtn.heightAnchor.constraint(equalToConstant: 49).isActive = true
         
+        self.sendBtn.titleLabel?.font = .boldSystemFont(ofSize: 16)
         self.sendBtn.layer.cornerRadius = 8
         self.sendBtn.semanticContentAttribute = .forceRightToLeft
         self.sendBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
-        self.sendBtn.setTitle("Отправить 1", for: .normal)
         self.sendBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
         self.sendBtn.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.sendBtn.tintColor = UIColor(r: 185, g: 185, b: 185)
         self.sendBtn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
-        
         
         self.view.addSubview(self.countLabel)
         self.countLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -235,8 +230,11 @@ class SendHertsVC: UIViewController{
         self.countLabel.font = .boldSystemFont(ofSize: 24)
         
         self.countLabel.textColor = UIColor(r: 185, g: 185, b: 185)
-        self.countLabel.text = "1"
-        
+        if self.isFree || self.maxHerts >= 1{
+            self.countHerts = 1
+        }else{
+            self.countHerts = 0
+        }
         
         self.view.addSubview(self.minusBtn)
         self.minusBtn.translatesAutoresizingMaskIntoConstraints = false
@@ -245,7 +243,6 @@ class SendHertsVC: UIViewController{
         self.minusBtn.heightAnchor.constraint(equalToConstant: 32).isActive = true
         self.minusBtn.widthAnchor.constraint(equalTo: self.minusBtn.heightAnchor).isActive = true
         
-        self.minusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
         self.minusBtn.setTitle("-", for: .normal)
         self.minusBtn.titleLabel?.font = .systemFont(ofSize: 24)
         self.minusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
@@ -260,7 +257,6 @@ class SendHertsVC: UIViewController{
         self.plusBtn.heightAnchor.constraint(equalToConstant: 32).isActive = true
         self.plusBtn.widthAnchor.constraint(equalTo: self.minusBtn.heightAnchor).isActive = true
         
-        self.plusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
         self.plusBtn.setTitle("+", for: .normal)
         self.plusBtn.titleLabel?.font = .systemFont(ofSize: 24)
         self.plusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
@@ -288,7 +284,7 @@ class SendHertsVC: UIViewController{
             let keyboardRectangle = keyboardFrame.cgRectValue
             let keyboardHeight = keyboardRectangle.height
         guard self.textField.frame.maxY + keyboardHeight > self.view.frame.height else { return }
-        self.avatarTop?.constant -= 60
+        self.avatarTop?.constant -= 80
         self.needApp = true
     }
     
@@ -296,7 +292,7 @@ class SendHertsVC: UIViewController{
         self.textField.resignFirstResponder()
         guard self.needApp else { return }
         self.needApp = false
-        self.avatarTop?.constant += 60
+        self.avatarTop?.constant += 80
     }
     
     @objc func changeCount(sender: UIButton){
@@ -307,6 +303,18 @@ class SendHertsVC: UIViewController{
     @objc func changeType(sender: UIButton){
         self.textField.text?.removeAll()
         
+        guard self.countHerts != 0 else { return }
+        
+        if sender == self.idTypeBtn {
+            self.textFieldType = .id
+        }else{
+            self.textFieldType = .phone
+        }
+        
+        self.checkColors(oldValue: self.countHerts)
+        
+        guard self.countHerts != 0 else { return }
+        
         self.countLabel.textColor = UIColor(r: 255, g: 95, b: 45)
         self.minusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         self.plusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
@@ -315,11 +323,6 @@ class SendHertsVC: UIViewController{
         self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
         
-        if sender == self.idTypeBtn {
-            self.textFieldType = .id
-        }else{
-            self.textFieldType = .phone
-        }
     }
     
     @objc func past(){
@@ -343,30 +346,68 @@ class SendHertsVC: UIViewController{
         self.name.text = "Саня"
         self.insta.text = "@pepa_desh"
         self.avatarView.image = UIImage(named: "testPhoto")
+        self.name.isHidden = false
+        self.insta.isHidden = false
+    }
+    
+    func checkColors(oldValue: Int){
+        if self.countHerts == 0 && !self.isFree && self.maxHerts == 0 {
+            self.countLabel.textColor = UIColor(r: 185, g: 185, b: 185)
+            self.minusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
+            self.minusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
+            self.plusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
+            self.plusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
+            self.sendBtn.setTitle("У вас нет дополнительных валентинок", for: .normal)
+            self.sendBtn.titleLabel?.font = .systemFont(ofSize: 12)
+            self.sendBtn.tintColor = UIColor(r: 185, g: 185, b: 185)
+            self.sendBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
+            self.sendBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
+            self.countLabel.text = String(0)
+            return
+        }
+        guard self.countHerts != 0 && (self.countHerts <= self.maxHerts || self.isFree) else { self.countHerts = oldValue; return }
+        var needPlusBackground = true
+        self.sendBtn.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        if self.countHerts > self.maxHerts && self.isFree {
+            self.countHerts = 1
+            self.plusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
+            needPlusBackground = false
+        }
+        self.countLabel.text = String(self.countHerts)
+        if self.countHerts == 1 && self.isFree {
+            self.sendBtn.setTitle("Отправить бесплатное", for: .normal)
+        }else{
+            self.sendBtn.setTitle("Отправить \(self.countHerts)", for: .normal)
+        }
+        guard self.textFieldType != .none else {
+            self.minusBtn.backgroundColor =  UIColor(r: 247, g: 247, b: 247)
+            self.plusBtn.backgroundColor =  UIColor(r: 247, g: 247, b: 247)
+            return }
+        self.minusBtn.backgroundColor = self.countHerts == 1 ? UIColor(r: 247, g: 247, b: 247) :  UIColor(r: 255, g: 239, b: 234)
+        guard needPlusBackground else { return }
+        self.plusBtn.backgroundColor = self.countHerts == self.maxHerts ? UIColor(r: 247, g: 247, b: 247) : UIColor(r: 255, g: 239, b: 234)
+        
+        
     }
     
 }
 
 import Contacts
 extension SendHertsVC: Conactdelegate{
-    func getConact(conact: CNContact) {
-        for num in conact.phoneNumbers {
-            let numVal = num.value
-            if num.label == CNLabelPhoneNumberMobile {
-                self.textField.text = numVal.stringValue
-                self.getUser(value: numVal.stringValue)
-                break
-            }
-        }
-        guard (self.textField.text?.isEmpty ?? true) else { return }
-        let alert = UIAlertController(title: "Не получается извлечь номер", message: "Попробуйте позже или введите номер вручную", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Ok", style: .default))
-        self.present(alert, animated: true, completion: nil)
-        
+    func getConact(name: String, phone: String) {
+        self.textField.text = phone
+        self.getUser(value: phone)
     }
 }
 
 extension SendHertsVC: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        self.avatarView.image = UIImage(named: "avatar")
+        self.insta.isHidden = true
+        self.name.isHidden = true
+        return true
+    }
+    
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         guard textField.text?.count == 36, let text = textField.text else { return true}
         self.getUser(value: text)
