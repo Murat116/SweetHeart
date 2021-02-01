@@ -208,9 +208,6 @@ class UserRegistaration: UIViewController {
         if state == .edit{
             self.nameField.text = model.name
             self.instField.text = model.instagram
-            
-            
-            
         }else{
             
         }
