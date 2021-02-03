@@ -6,10 +6,15 @@
 //
 
 import UIKit
+import StoreKit
 
 class BuyVC: UIViewController{
     
-    var herts: Int = 5
+    var herts: Int {
+        get{
+            return Datamanager.shared.curentUser!.coins
+        }
+    }
     
     var backBtn = UIButton()
     var balance = UIButton()
@@ -19,11 +24,43 @@ class BuyVC: UIViewController{
     
     var tableView = UITableView()
     
-    var model = TypeOfSell.allCases
+    var model = [SKProduct](){
+        didSet{
+            self.tableView.reloadData()
+        }
+    }
+    
+    lazy var activityIndicator: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        self.view.addSubview(view)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        view.widthAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        
+        view.hidesWhenStopped = true
+        return view
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
+        
+        self.showSpinner()
+        Purchases.shared.initialize { [weak self] result in
+            guard let self = self else { return }
+            self.hideSpinner()
+            
+            switch result {
+            case let .success(products):
+                DispatchQueue.main.async {
+                    self.updateInterface(products: products)
+                }
+            default:
+                break
+            }
+        }
         
         self.view.addSubview(self.backBtn)
         self.backBtn.translatesAutoresizingMaskIntoConstraints = false
@@ -45,7 +82,6 @@ class BuyVC: UIViewController{
         self.balance.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 19).isActive = true
         self.balance.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
         self.balance.contentHorizontalAlignment = .right
         self.balance.semanticContentAttribute = .forceRightToLeft
@@ -99,6 +135,25 @@ class BuyVC: UIViewController{
     @objc func back(){
         self.navigationController?.popViewController(animated: true)
     }
+    
+    func showSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+            self.activityIndicator.isHidden = false
+        }
+    }
+    
+    func hideSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+        }
+    }
+    
+    private func updateInterface(products: [SKProduct]) {
+        var model = products
+        model.sort{$0.price.floatValue < $1.price.floatValue}
+        self.model = model
+    }
 }
 
 extension BuyVC: UITableViewDataSource, UITableViewDelegate{
@@ -116,7 +171,26 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
         return 81
     }
     
-
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        showSpinner()
+        Purchases.shared.purchaseProduct(productId: TypeOfSell.allCases[indexPath.row].rawValue) { [weak self] result in
+            self?.hideSpinner()
+            switch result {
+            case .success(let suc):
+                guard suc else { return }
+                guard let user = Datamanager.shared.curentUser else { return }
+                var coins  = user.coins
+                coins += TypeOfSell.allCases[indexPath.row].count
+                Datamanager.shared.updateProperty(of: user, value: coins, for: #keyPath(UserModel.coins))
+                self?.balance.setTitle(String(coins), for: .normal)
+            case .failure(let error):
+                let alert = UIAlertController(title: "Сбой в обишки покуки", message: error.localizedDescription, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .default))
+                self?.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
 }
 
 
@@ -171,39 +245,67 @@ class BuyCell: UITableViewCell{
         
     }
     
-    func configure(type: TypeOfSell){
-        self.countLabel.text = type.text
-        self.priceLabel.text = "140"
-        self.currency.text = "rub"
+    func configure(type: SKProduct){
+        self.countLabel.text = type.localizedTitle//type.text
+        self.priceLabel.text = String(type.price.floatValue)
+        self.currency.text = type.priceLocale.currencyCode
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    
 }
 
-enum TypeOfSell: CaseIterable{
-    case five
-    case twoZero
-    case fiveZero
-    case hundred
-    case twoFifty
-    case fiveFundred
+enum TypeOfSell: String, CaseIterable{
+    case five =  "hopeTo.Sweetheart.five"
+    case twoZero =  "hopeTo.Sweetheart.trwentytwo"
+    case fiveZero = "hopeTo.Sweetheart.fifty"
+    case hundred = "hopeTo.Sweetheart.hundreed"
+    case twoFifty = "hopeTo.Sweetheart.twoFifty"
+    case fiveFundred = "hopeTo.Sweetheart.oneFiveZeroZero"
+    case crazy = "hopeTo.Sweetheart.crazy"
     
-    var text: String {
+    var count : Int  {
         switch self {
         case .five:
-            return "+ 5 валентинок"
+            return 5
         case .twoZero:
-            return "+ 20 валентинок"
+            return 22
         case .fiveZero:
-            return "+ 50 валентинок"
+            return 50
         case .hundred:
-            return "+ 100 валентинок"
+            return 100
         case .twoFifty:
-            return "+ 250 валентинок"
+            return 250
         case .fiveFundred:
-            return "+ 500 валентинок"
+            return  500
+        case .crazy:
+            return 30000
+        }
+    }
+}
+
+
+
+
+extension SKProduct {
+    var localizedPrice: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.locale = priceLocale
+        return formatter.string(from: price)!
+    }
+    
+    var title: String? {
+        switch productIdentifier {
+        case "barcode_month_subscription":
+            return "Monthly Subscription"
+        case "barcode_year_subscription":
+            return "Annual Subscription"
+        default:
+            return nil
         }
     }
 }

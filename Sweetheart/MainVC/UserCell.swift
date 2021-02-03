@@ -44,7 +44,7 @@ class UserCell: UITableViewCell{
         self.addSubview(self.name)
         self.name.translatesAutoresizingMaskIntoConstraints = false
         self.name.leftAnchor.constraint(equalTo: self.avatar.rightAnchor, constant: 16).isActive = true
-        self.name.topAnchor.constraint(equalTo: self.avatar.topAnchor, constant: 16).isActive = true
+        self.name.topAnchor.constraint(equalTo: self.topAnchor, constant: 16).isActive = true
         self.name.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -50).isActive = true
         
         self.name.font = UIFont.boldSystemFont(ofSize: 18)
@@ -52,7 +52,7 @@ class UserCell: UITableViewCell{
         
         self.addSubview(self.instagram)
         self.instagram.translatesAutoresizingMaskIntoConstraints = false
-        self.instagram.topAnchor.constraint(equalTo: self.name.bottomAnchor, constant: 8).isActive = true
+        self.instagram.bottomAnchor.constraint(equalTo: self.avatar.bottomAnchor, constant: -8).isActive = true
         self.instagram.leftAnchor.constraint(equalTo: self.name.leftAnchor).isActive = true
         self.instagram.rightAnchor.constraint(equalTo: self.name.rightAnchor, constant: 10).isActive = true
         
@@ -90,9 +90,9 @@ class UserCell: UITableViewCell{
         self.instagram.text = model.instagram ?? "empty"
         self.likes.text = String(model.valentines)
         
-        if model.id == Datamanager.shared.curentUser.id || number < 3{
+        if model.id == Datamanager.shared.curentUser!.id || number < 3{
             self.layer.cornerRadius = 11
-            self.backgroundColor =  model.id == Datamanager.shared.curentUser.id ? UIColor(r: 255, g: 239, b: 234) : .white
+            self.backgroundColor =  model.id == Datamanager.shared.curentUser!.id ? UIColor(r: 255, g: 239, b: 234) : .white
             self.name.textColor = UIColor(r: 255, g: 95, b: 41)
             self.instagram.textColor = UIColor(r: 252, g: 154, b: 124)
         }else{

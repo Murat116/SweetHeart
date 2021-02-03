@@ -30,7 +30,7 @@ class UserRegistaration: UIViewController {
     var coppy = UIButton()
     var cancel = UIButton()
     
-    var userModel: UserModel = Datamanager.shared.curentUser
+    var userModel: UserModel = Datamanager.shared.curentUser!
     
     var isUserInit = false
     
@@ -244,10 +244,11 @@ class UserRegistaration: UIViewController {
     }
     
     @objc func coppyAction(){
-        UIPasteboard.general.string = Datamanager.shared.curentUser.id
+        UIPasteboard.general.string = Datamanager.shared.curentUser!.id
     }
     
     @objc func openPicker(){
+        guard self.state == .edit else { return }
         let imagePickerController = UIImagePickerController()
         
         imagePickerController.delegate = self
@@ -276,13 +277,15 @@ class UserRegistaration: UIViewController {
     
     func configure(state: VCState, isUserInit: Bool = false){
         self.isUserInit = isUserInit
+        self.backBtn.isHidden = state == .edit
         self.state = state
     }
     
     @objc func edit(btn: UIButton){
         guard !self.isUserInit else {
             let vc = MainVC()
-            UIApplication.shared.windows.first?.rootViewController = vc
+            let navigationViewController = UINavigationController(rootViewController: vc)
+            UIApplication.shared.windows.first?.rootViewController = navigationViewController
             return
         }
         UIView.animate(withDuration: 0.2) {
@@ -305,7 +308,8 @@ class UserRegistaration: UIViewController {
         self.state = .view
         guard self.isUserInit else { return }
         let vc = MainVC()
-        UIApplication.shared.windows.first?.rootViewController = vc
+        let navigationViewController = UINavigationController(rootViewController: vc)
+        UIApplication.shared.windows.first?.rootViewController = navigationViewController
     }
     
     @objc func back(){
