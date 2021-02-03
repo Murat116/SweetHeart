@@ -90,9 +90,9 @@ class UserCell: UITableViewCell{
         self.instagram.text = model.instagram ?? "empty"
         self.likes.text = String(model.valentines)
         
-        if model.id == Datamanager.shared.curentUser.id || number < 3{
+        if model.id == Datamanager.shared.curentUser!.id || number < 3{
             self.layer.cornerRadius = 11
-            self.backgroundColor =  model.id == Datamanager.shared.curentUser.id ? UIColor(r: 255, g: 239, b: 234) : .white
+            self.backgroundColor =  model.id == Datamanager.shared.curentUser!.id ? UIColor(r: 255, g: 239, b: 234) : .white
             self.name.textColor = UIColor(r: 255, g: 95, b: 41)
             self.instagram.textColor = UIColor(r: 252, g: 154, b: 124)
         }else{

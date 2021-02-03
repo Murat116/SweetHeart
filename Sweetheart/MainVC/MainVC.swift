@@ -18,7 +18,7 @@ class MainVC: UIViewController{
     
     var sendBtn = UIButton()
     
-    var userModel: UserModel = Datamanager.shared.curentUser
+    var userModel: UserModel = Datamanager.shared.curentUser!
     
     var alluser: [UserModel] = Datamanager.shared.anotherUsers
     
@@ -59,18 +59,29 @@ class MainVC: UIViewController{
         self.balance.translatesAutoresizingMaskIntoConstraints = false
         self.balance.centerYAnchor.constraint(equalTo: self.myName.centerYAnchor).isActive = true
         self.balance.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 32).isActive = true
-        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
+//        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        self.balance.widthAnchor.constraint(equalToConstant: 100).isActive = true
         
         self.balance.contentHorizontalAlignment = .left
         
         self.balance.semanticContentAttribute = .forceRightToLeft
-        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 0)
+        self.balance.imageEdgeInsets = UIEdgeInsets(top: 0, left: 3, bottom: 0, right: 0)
         self.balance.setImage(UIImage(named: "Hearts"), for: .normal)
         
         self.balance.setTitle("\(self.userModel.coins)", for: .normal)
         self.balance.setTitleColor(UIColor(r: 255, g: 95, b: 41), for: .normal)
         self.balance.addTarget(self, action: #selector(self.openBuy), for: .touchUpInside)
+        self.balance.titleLabel?.font = .boldSystemFont(ofSize: 18)
+        
+        let plusLabel = UILabel()
+        self.view.addSubview(plusLabel)
+        plusLabel.translatesAutoresizingMaskIntoConstraints = false
+        plusLabel.centerYAnchor.constraint(equalTo: self.balance.centerYAnchor, constant: -2).isActive = true
+        plusLabel.leftAnchor.constraint(equalTo: self.balance.leftAnchor, constant: 34).isActive = true
+        
+        plusLabel.text = "+"
+        plusLabel.textColor = UIColor(r: 255, g: 95, b: 41)
+        plusLabel.font = .boldSystemFont(ofSize: 22)
         
         self.view.addSubview(self.topLabel)
         self.topLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -138,17 +149,25 @@ class MainVC: UIViewController{
 
 extension MainVC: UITableViewDataSource, UITableViewDelegate{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 100
+        return self.alluser.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "userCell") as? UserCell else { return UITableViewCell()}
-        let user = indexPath.row % 23 == 0 ? self.userModel : UserModel()
-        cell.configure(with: user, number: indexPath.row)
+        cell.configure(with: self.alluser[indexPath.row], number: indexPath.row)
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 76
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let vc = SendHertsVC()
+        vc.changeType(sender: UIButton())
+        vc.anotherUser = self.alluser[indexPath.row]
+        vc.textFieldType = .name
+        self.navigationController?.pushViewController(vc, animated: true)
+        
     }
 }

@@ -15,6 +15,16 @@ class PhoneVC: UIViewController{
     
     var sendBtn = UIButton()
     
+    var phomeIsValid: Bool = false {
+        didSet{
+            guard self.phomeIsValid != oldValue else { return }
+            let backgroundColor = self.phomeIsValid ? UIColor(r: 255, g: 95, b: 45) :  UIColor(r: 247, g: 247, b: 247)
+            let titleColor = self.phomeIsValid ? UIColor(r: 255, g: 248, b: 235) : UIColor(r: 185, g: 185, b: 185)
+            self.sendBtn.backgroundColor = backgroundColor
+            self.sendBtn.setTitleColor(titleColor, for: .normal)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -67,15 +77,30 @@ class PhoneVC: UIViewController{
         
         self.view.addSubview(self.sendBtn)
         self.sendBtn.translatesAutoresizingMaskIntoConstraints = false
+        self.sendBtn.topAnchor.constraint(equalTo: self.phoneFiled.bottomAnchor, constant: 24).isActive = true
         self.sendBtn.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 32).isActive = true
         self.sendBtn.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant:  -32).isActive = true
         self.sendBtn.heightAnchor.constraint(equalToConstant: 49).isActive = true
     
+        self.sendBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
+        self.sendBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
+        self.sendBtn.setTitle("Отправить код", for: .normal)
+        self.sendBtn.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        
+        self.sendBtn.addTarget(self, action: #selector(self.sendCode), for: .touchUpInside)
+        
+    }
+    
+    @objc func sendCode(){
+        guard self.phomeIsValid else { return }
+        let vc = PaswordVC()
+        vc.phone = self.phoneFiled.text
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc func textFieldTyping(textField:UITextField)
     {
-        self.phoneFiled.isValidNumber
+        self.phomeIsValid = self.phoneFiled.isValidNumber
     }
 }
 

@@ -12,7 +12,7 @@ class BuyVC: UIViewController{
     
     var herts: Int {
         get{
-            return Datamanager.shared.curentUser.coins
+            return 273//Datamanager.shared.curentUser!.coins
         }
     }
     

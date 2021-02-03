@@ -25,6 +25,8 @@ class FriendsViewController: UIViewController {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         
+        
+        
         self.view.addSubview(self.backBtn)
         self.backBtn.translatesAutoresizingMaskIntoConstraints = false
         self.backBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 23).isActive = true
@@ -118,7 +120,7 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
 extension FriendsViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.row != 0 else {
-            self.delegate?.getConact(name: Datamanager.shared.curentUser.name ?? "User", phone: Datamanager.shared.curentUser.phone)
+            self.delegate?.getConact(name: Datamanager.shared.curentUser!.name ?? "User", phone: Datamanager.shared.curentUser!.phone)
             self.navigationController?.popViewController(animated: true)
             return
         }
@@ -158,6 +160,9 @@ class FriendCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.addSubview(self.contactNameLabel)
+        
+        self.selectionStyle = .none
+        
         self.contactNameLabel.translatesAutoresizingMaskIntoConstraints = false
         self.contactNameLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 8).isActive = true
         self.contactNameLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 24).isActive = true
@@ -183,7 +188,7 @@ class FriendCell: UITableViewCell {
     func configureCell(isMe: Bool, with contact : CNContact) {
         guard !isMe else {
             self.contactNameLabel.text = "Себе 😈"
-            self.contactPhome.text = Datamanager.shared.curentUser.phone
+            self.contactPhome.text = Datamanager.shared.curentUser!.phone
             return
         }
         
@@ -194,11 +199,7 @@ class FriendCell: UITableViewCell {
         let numbers = contact.phoneNumbers
         for num in numbers {
             let numVal = num.value
-            if num.label == CNLabelPhoneNumberMobile {
-                self.contactPhome.text = numVal.stringValue
-                break
-            }
-            self.contactPhome.text = "Nill"
+            self.contactPhome.text = numVal.stringValue
         }
     }
     

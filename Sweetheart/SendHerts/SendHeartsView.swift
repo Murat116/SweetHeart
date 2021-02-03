@@ -9,7 +9,12 @@ import UIKit
 
 class SendHertsVC: UIViewController{
     
-    var curentUser: UserModel = Datamanager.shared.curentUser
+    var curentUser: UserModel {
+        get {
+            Datamanager.shared.curentUser!
+        }
+    }
+    var anotherUser: UserModel? = nil
     
     var backBtn = UIButton()
     var balance = UIButton()
@@ -33,10 +38,16 @@ class SendHertsVC: UIViewController{
     
     var maxHerts: Int {
         get{
-            return Datamanager.shared.curentUser.coins
+            return Datamanager.shared.curentUser!.coins
         }
     }
-    var isFree: Bool = false //test
+    var isFree: Bool {
+        get{
+            guard let anotherUser = self.anotherUser else { return false}
+            guard let votes = (self.curentUser.votesData?.jsonDictionary ?? [:])[anotherUser.phone] as? Int else { return true}
+            return votes < 1
+        }
+    }
  
     var countLabel = UILabel()
     var countHerts: Int = -1 {
@@ -51,6 +62,9 @@ class SendHertsVC: UIViewController{
     
     var textFieldType: FiledType = .none {
         didSet{
+            if self.textFieldType != oldValue, oldValue == .name{
+                self.textField.isUserInteractionEnabled = true
+            }
             if self.textFieldType == .id {
                 self.textField.isHidden = false
                 self.pastBtn.isHidden = false
@@ -73,6 +87,15 @@ class SendHertsVC: UIViewController{
             self.avatarView.image = UIImage(named: "avatar")
             self.insta.isHidden = true
             self.name.isHidden = true
+            
+            if self.textFieldType == .name, let user = self.anotherUser
+            {
+                self.textField.text = user.name
+                let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+                self.avatarView.image = image
+                self.name.text = user.name
+                self.insta.text = user.instagram
+            }
         }
     }
     
@@ -136,7 +159,7 @@ class SendHertsVC: UIViewController{
         self.name.font = .boldSystemFont(ofSize: 24)
         self.name.textColor = .black
         self.name.textAlignment = .center
-        self.name.isHidden = true
+        self.name.isHidden = self.textFieldType != .name
         
         self.view.addSubview(self.insta)
         self.insta.translatesAutoresizingMaskIntoConstraints = false
@@ -146,7 +169,7 @@ class SendHertsVC: UIViewController{
         
         self.insta.font = .systemFont(ofSize: 14)
         self.insta.textColor = UIColor(r: 114, g: 114, b: 114)
-        self.insta.isHidden = true
+        self.insta.isHidden = self.textFieldType != .name
         
         self.view.addSubview(self.sendTypeLabel)
         self.sendTypeLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -196,7 +219,7 @@ class SendHertsVC: UIViewController{
         
         self.pastBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
         self.pastBtn.layer.cornerRadius = 8
-        self.pastBtn.isHidden = true
+        self.pastBtn.isHidden = self.textFieldType != .name
         self.pastBtn.addTarget(self, action: #selector(self.past), for: .touchUpInside)
         
         self.view.addSubview(self.textField)
@@ -209,7 +232,7 @@ class SendHertsVC: UIViewController{
         self.textField.setLeftPaddingPoints(24)
         self.textField.backgroundColor = UIColor(r: 247, g: 247, b: 247)
         self.textField.layer.cornerRadius = 7
-        self.textField.isHidden = true
+        self.textField.isHidden = self.textFieldType != .name
         
         self.textField.delegate = self
         
@@ -229,6 +252,8 @@ class SendHertsVC: UIViewController{
         self.sendBtn.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.sendBtn.tintColor = UIColor(r: 185, g: 185, b: 185)
         self.sendBtn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
+        
+        self.sendBtn.addTarget(self, action: #selector(self.sendSms), for: .touchUpInside)
         
         self.view.addSubview(self.countLabel)
         self.countLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -286,6 +311,33 @@ class SendHertsVC: UIViewController{
             name: UIResponder.keyboardWillShowNotification,
             object: nil
         )
+        
+        
+        guard self.textFieldType == .name, let user = self.anotherUser else { return }
+        self.textField.isHidden = false
+        self.pastBtn.isHidden = false
+        self.idTypeBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+        self.idTypeBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+        self.pastBtn.setImage(UIImage(named: "defaultPhoto"), for: .normal)
+        self.textField.attributedPlaceholder = NSAttributedString(string: "Номер пользователя", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
+        self.phomeTypeBtn.backgroundColor = UIColor(r: 255, g: 219, b: 208)
+        self.phomeTypeBtn.setTitleColor(UIColor(r: 222, g: 65, b: 16), for: .normal)
+        let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+        self.avatarView.image = image
+        self.getUser(value: nil)
+        
+    }
+    
+    @objc func sendSms(){
+        guard let anotherUser = self.anotherUser else { return }
+        let valentines = anotherUser.valentines + self.countHerts
+        Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
+        let valent = self.curentUser.valentines - self.countHerts
+        var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
+        votes[anotherUser.phone] = 1
+        Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
+        Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.valentines))
+        self.navigationController?.popViewController(animated: true)
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
@@ -350,13 +402,12 @@ class SendHertsVC: UIViewController{
         self.navigationController?.popViewController(animated: true)
     }
     
-    func getUser(value: String){
+    func getUser(value: String?){
         
         //send user -> get user
-        let user = UserModel.createUser(phone: "89196242960", type: .another) //test
-        
-        let votes = self.curentUser.votes[user.phone]
-        self.isFree = votes == nil || votes == 0
+        if value != nil {
+            self.anotherUser = UserModel.createUser(phone: "89196242960", type: .another) //test
+        }
         
         if self.isFree || self.maxHerts >= 1{
             self.countHerts = 1
@@ -376,6 +427,7 @@ class SendHertsVC: UIViewController{
         self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
     
+        guard value != nil else { return }
         self.name.text = "Саня"
         self.insta.text = "@pepa_desh"
         self.avatarView.image = UIImage(named: "testPhoto")
@@ -452,4 +504,5 @@ enum FiledType{
     case none
     case id
     case phone
+    case name
 }
