@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import PhoneNumberKit
 
 class SendHertsVC: UIViewController{
     
@@ -15,6 +16,8 @@ class SendHertsVC: UIViewController{
         }
     }
     var anotherUser: UserModel? = nil
+    
+    
     
     var backBtn = UIButton()
     var balance = UIButton()
@@ -33,6 +36,8 @@ class SendHertsVC: UIViewController{
     var pastBtn = UIButton()
     var textField = UITextField()
     
+    var height: CGFloat = 0
+    
     var plusBtn = UIButton()
     var minusBtn = UIButton()
     
@@ -48,7 +53,7 @@ class SendHertsVC: UIViewController{
             return votes < 1
         }
     }
- 
+    
     var countLabel = UILabel()
     var countHerts: Int = -1 {
         didSet{
@@ -124,7 +129,6 @@ class SendHertsVC: UIViewController{
         self.balance.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 19).isActive = true
         self.balance.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
         self.balance.contentHorizontalAlignment = .right
         self.balance.semanticContentAttribute = .forceRightToLeft
@@ -138,7 +142,7 @@ class SendHertsVC: UIViewController{
         self.view.addSubview(self.avatarView)
         self.avatarView.translatesAutoresizingMaskIntoConstraints = false
         self.avatarView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
-        self.avatarTop = self.avatarView.topAnchor.constraint(equalTo: self.backBtn.bottomAnchor, constant: 47)
+        self.avatarTop = self.avatarView.topAnchor.constraint(equalTo: self.backBtn.bottomAnchor, constant: ScreenTheme.isXFormat ? 47 : 10)
         self.avatarTop?.isActive = true
         self.avatarView.heightAnchor.constraint(equalToConstant: 88).isActive = true
         self.avatarView.widthAnchor.constraint(equalToConstant: 88).isActive = true
@@ -332,28 +336,31 @@ class SendHertsVC: UIViewController{
         guard let anotherUser = self.anotherUser else { return }
         let valentines = anotherUser.valentines + self.countHerts
         Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
-        let valent = self.curentUser.valentines - self.countHerts
+        if !self.isFree || self.countHerts > 1{
+            let valent = self.curentUser.coins - self.countHerts + (self.isFree ? 1 : 0)
+            Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.coins))
+        }
         var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
         votes[anotherUser.phone] = 1
         Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
-        Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.valentines))
         self.navigationController?.popViewController(animated: true)
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
         guard let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-            let keyboardRectangle = keyboardFrame.cgRectValue
-            let keyboardHeight = keyboardRectangle.height
+        let keyboardRectangle = keyboardFrame.cgRectValue
+        let keyboardHeight = keyboardRectangle.height
         guard self.textField.frame.maxY + keyboardHeight > self.view.frame.height else { return }
-        self.avatarTop?.constant -= 80
+        self.height = self.textField.frame.maxY + keyboardHeight - self.view.frame.height
+        self.avatarTop?.constant -= self.height
         self.needApp = true
     }
     
     @objc func hideKeyboard(){
         self.textField.resignFirstResponder()
         guard self.needApp else { return }
+        self.avatarTop?.constant += self.height
         self.needApp = false
-        self.avatarTop?.constant += 80
     }
     
     @objc func changeCount(sender: UIButton){
@@ -406,7 +413,7 @@ class SendHertsVC: UIViewController{
         
         //send user -> get user
         if value != nil {
-            self.anotherUser = UserModel.createUser(phone: "89196242960", type: .another) //test
+            self.anotherUser = Datamanager.shared.createUser(with: value!, type: .another) //test
         }
         
         if self.isFree || self.maxHerts >= 1{
@@ -426,7 +433,7 @@ class SendHertsVC: UIViewController{
         self.sendBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
         self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
         self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
-    
+        
         guard value != nil else { return }
         self.name.text = "Саня"
         self.insta.text = "@pepa_desh"
@@ -480,8 +487,16 @@ class SendHertsVC: UIViewController{
 import Contacts
 extension SendHertsVC: Conactdelegate{
     func getConact(name: String, phone: String) {
-        self.textField.text = phone
-        self.getUser(value: phone)
+        do{
+            let phone = try PhoneNumberKit().parse(phone)
+            let number = phone.numberString
+            self.textField.text = number
+            self.getUser(value: number)
+        }catch{
+            let alert = UIAlertController(title: "Неправильный формат номера", message: "Выберите другой или введите позже", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+        }
     }
 }
 
@@ -494,6 +509,10 @@ extension SendHertsVC: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text){
+            self.getUser(value: text)
+            return true
+        }
         guard textField.text?.count == 36, let text = textField.text else { return true}
         self.getUser(value: text)
         return true
@@ -505,4 +524,12 @@ enum FiledType{
     case id
     case phone
     case name
+}
+
+struct ScreenTheme {
+    
+    static var isXFormat: Bool {
+        return UIScreen.main.bounds.height / UIScreen.main.bounds.width >= 896.0 / 414.0
+    }
+    
 }

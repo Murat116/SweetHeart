@@ -60,7 +60,7 @@ class MainVC: UIViewController{
         self.balance.centerYAnchor.constraint(equalTo: self.myName.centerYAnchor).isActive = true
         self.balance.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 32).isActive = true
 //        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 100).isActive = true
+//        self.balance.widthAnchor.constraint(equalToConstant: 100).isActive = true
         
         self.balance.contentHorizontalAlignment = .left
         
@@ -77,7 +77,7 @@ class MainVC: UIViewController{
         self.view.addSubview(plusLabel)
         plusLabel.translatesAutoresizingMaskIntoConstraints = false
         plusLabel.centerYAnchor.constraint(equalTo: self.balance.centerYAnchor, constant: -2).isActive = true
-        plusLabel.leftAnchor.constraint(equalTo: self.balance.leftAnchor, constant: 34).isActive = true
+        plusLabel.leftAnchor.constraint(equalTo: self.balance.rightAnchor, constant: 3).isActive = true
         
         plusLabel.text = "+"
         plusLabel.textColor = UIColor(r: 255, g: 95, b: 41)
@@ -128,6 +128,12 @@ class MainVC: UIViewController{
 
         self.view.layoutIfNeeded()
         self.meBtn.layer.cornerRadius = self.meBtn.frame.height / 2
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tableView.reloadData()
+        self.balance.setTitle(String(self.userModel.coins), for: .normal)
     }
     
     @objc func openMeView(){

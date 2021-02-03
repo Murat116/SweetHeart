@@ -126,12 +126,12 @@ extension FriendsViewController {
         }
         let contact = self.contacts[indexPath.row - 1]
         var phone: String? = nil
-        for num in contact.phoneNumbers {
+
+        let numbers = contact.phoneNumbers
+        for num in numbers {
             let numVal = num.value
-            if num.label == CNLabelPhoneNumberMobile {
-                phone = numVal.stringValue
-                break
-            }
+            phone = numVal.stringValue
+            break
         }
         
         guard phone != nil else {

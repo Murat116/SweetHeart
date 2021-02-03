@@ -12,7 +12,7 @@ class BuyVC: UIViewController{
     
     var herts: Int {
         get{
-            return 273//Datamanager.shared.curentUser!.coins
+            return Datamanager.shared.curentUser!.coins
         }
     }
     
@@ -82,7 +82,6 @@ class BuyVC: UIViewController{
         self.balance.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 19).isActive = true
         self.balance.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        self.balance.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
         self.balance.contentHorizontalAlignment = .right
         self.balance.semanticContentAttribute = .forceRightToLeft
@@ -183,6 +182,7 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
                 var coins  = user.coins
                 coins += TypeOfSell.allCases[indexPath.row].count
                 Datamanager.shared.updateProperty(of: user, value: coins, for: #keyPath(UserModel.coins))
+                self?.balance.setTitle(String(coins), for: .normal)
             case .failure(let error):
                 let alert = UIAlertController(title: "Сбой в обишки покуки", message: error.localizedDescription, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default))
