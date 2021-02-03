@@ -21,10 +21,25 @@
 		45366BCF25C48F1A0010ED2C /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCE25C48F1A0010ED2C /* UserCell.swift */; };
 		45366BD225C5B24C0010ED2C /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BD125C5B24C0010ED2C /* UIColor.swift */; };
 		45DE36B425C9D9D400950230 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DE36B325C9D9D400950230 /* Purchases.swift */; };
+		45DE36B825CA0D6D00950230 /* PhoneVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DE36B725CA0D6C00950230 /* PhoneVC.swift */; };
+		45DE36C225CA15D100950230 /* PhoneNumberKit in Frameworks */ = {isa = PBXBuildFile; productRef = 45DE36C125CA15D100950230 /* PhoneNumberKit */; };
 		45E4E5F925C5C91400640429 /* SendHeartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4E5F825C5C91400640429 /* SendHeartsView.swift */; };
 		45E4E5FC25C5C94800640429 /* BuyVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4E5FB25C5C94800640429 /* BuyVC.swift */; };
 		45E4E60025C5CB5A00640429 /* UserContacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E4E5FF25C5CB5A00640429 /* UserContacts.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		45DE36C325CA15D200950230 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		452D766925C2024B005AC27F /* Sweetheart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sweetheart.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -41,6 +56,7 @@
 		45366BCE25C48F1A0010ED2C /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
 		45366BD125C5B24C0010ED2C /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		45DE36B325C9D9D400950230 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
+		45DE36B725CA0D6C00950230 /* PhoneVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneVC.swift; sourceTree = "<group>"; };
 		45E4E5F825C5C91400640429 /* SendHeartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendHeartsView.swift; sourceTree = "<group>"; };
 		45E4E5FB25C5C94800640429 /* BuyVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyVC.swift; sourceTree = "<group>"; };
 		45E4E5FF25C5CB5A00640429 /* UserContacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserContacts.swift; sourceTree = "<group>"; };
@@ -52,6 +68,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				452D768E25C20887005AC27F /* Realm in Frameworks */,
+				45DE36C225CA15D100950230 /* PhoneNumberKit in Frameworks */,
 				452D768C25C20887005AC27F /* RealmSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,6 +98,7 @@
 				452D766C25C2024B005AC27F /* AppDelegate.swift */,
 				452D766E25C2024B005AC27F /* SceneDelegate.swift */,
 				452D768225C202E5005AC27F /* SignIn.swift */,
+				45DE36B625CA0D6200950230 /* Registration */,
 				45366BD425C5C48D0010ED2C /* MainVC */,
 				452D768725C2051A005AC27F /* UserSettings.swift */,
 				45E4E60225C5CB6000640429 /* SendHerts */,
@@ -105,6 +123,14 @@
 			path = MainVC;
 			sourceTree = "<group>";
 		};
+		45DE36B625CA0D6200950230 /* Registration */ = {
+			isa = PBXGroup;
+			children = (
+				45DE36B725CA0D6C00950230 /* PhoneVC.swift */,
+			);
+			path = Registration;
+			sourceTree = "<group>";
+		};
 		45E4E60225C5CB6000640429 /* SendHerts */ = {
 			isa = PBXGroup;
 			children = (
@@ -124,6 +150,7 @@
 				452D766525C2024B005AC27F /* Sources */,
 				452D766625C2024B005AC27F /* Frameworks */,
 				452D766725C2024B005AC27F /* Resources */,
+				45DE36C325CA15D200950230 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -133,6 +160,7 @@
 			packageProductDependencies = (
 				452D768B25C20887005AC27F /* RealmSwift */,
 				452D768D25C20887005AC27F /* Realm */,
+				45DE36C125CA15D100950230 /* PhoneNumberKit */,
 			);
 			productName = Sweetheart;
 			productReference = 452D766925C2024B005AC27F /* Sweetheart.app */;
@@ -163,6 +191,7 @@
 			mainGroup = 452D766025C2024B005AC27F;
 			packageReferences = (
 				452D768A25C20887005AC27F /* XCRemoteSwiftPackageReference "realm-cocoa" */,
+				45DE36BB25CA15D100950230 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */,
 			);
 			productRefGroup = 452D766A25C2024B005AC27F /* Products */;
 			projectDirPath = "";
@@ -197,6 +226,7 @@
 				452D768825C2051A005AC27F /* UserSettings.swift in Sources */,
 				45366BD225C5B24C0010ED2C /* UIColor.swift in Sources */,
 				45E4E5FC25C5C94800640429 /* BuyVC.swift in Sources */,
+				45DE36B825CA0D6D00950230 /* PhoneVC.swift in Sources */,
 				452D766F25C2024B005AC27F /* SceneDelegate.swift in Sources */,
 				452D769125C20893005AC27F /* UserModel.swift in Sources */,
 				452D768325C202E5005AC27F /* SignIn.swift in Sources */,
@@ -410,6 +440,14 @@
 				minimumVersion = 10.5.1;
 			};
 		};
+		45DE36BB25CA15D100950230 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/PhoneNumberKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -422,6 +460,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 452D768A25C20887005AC27F /* XCRemoteSwiftPackageReference "realm-cocoa" */;
 			productName = Realm;
+		};
+		45DE36C125CA15D100950230 /* PhoneNumberKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 45DE36BB25CA15D100950230 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */;
+			productName = PhoneNumberKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
