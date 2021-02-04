@@ -7,22 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "ED494E08-8CDD-4D04-B39A-88DABB4E5D0C"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Sweetheart/SendHerts/SendHeartsView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "353"
-            endingLineNumber = "353"
-            landmarkName = "keyboardWillShow(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "4144858D-0D21-4D0F-A874-E122BA5E2B02"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -215,7 +199,23 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "91D74325-6102-4EBC-9D89-64E5AF6EEF16"
+            uuid = "1BBD59CA-FDD2-4BAF-90BD-94AA023E76E0"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sweetheart/SendHerts/SendHeartsView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "339"
+            endingLineNumber = "339"
+            landmarkName = "sendSms()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D67004D7-10F7-4AF4-B993-19603960DC1B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -231,49 +231,81 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "89F9F0C8-A115-445C-90CB-7218B238B01E"
+            uuid = "7ABA61F3-FFCD-4F63-8A8A-CD100C3EC89B"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Sweetheart/SendHerts/SendHeartsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "416"
-            endingLineNumber = "416"
-            landmarkName = "getUser(value:)"
+            startingLineNumber = "347"
+            endingLineNumber = "347"
+            landmarkName = "sendSms()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "9F79DB53-F0A1-48DC-9430-F262EBBBB372"
+            uuid = "66200346-0F67-4FB7-8BDF-83E239035B56"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Sweetheart/SendHerts/SendHeartsView.swift"
+            filePath = "Sweetheart/Registration/UserSettings.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "51"
-            endingLineNumber = "51"
-            landmarkName = "isFree"
-            landmarkType = "24">
+            startingLineNumber = "339"
+            endingLineNumber = "339"
+            landmarkName = "sendRequest(_:parameters:completion:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "FD922EA0-9D7C-4393-A4A1-D2D7137CD205"
+            uuid = "6ADD6B03-0B9F-4254-9109-9FF88A088089"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Sweetheart/SendHerts/SendHeartsView.swift"
+            filePath = "Sweetheart/Registration/UserSettings.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
-            landmarkName = "isFree"
-            landmarkType = "24">
+            startingLineNumber = "338"
+            endingLineNumber = "338"
+            landmarkName = "sendRequest(_:parameters:completion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6ADD6B03-0B9F-4254-9109-9FF88A088089 - 1d7ebfcce129ace7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Sweetheart.UserRegistaration.sendRequest(_: Swift.String, parameters: Swift.Dictionary&lt;Swift.String, Swift.String&gt;, completion: (Swift.Optional&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Sweetheart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/anmin/Desktop/Sweetheart/Sweetheart/Registration/UserSettings.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "338"
+                  endingLineNumber = "338"
+                  offsetFromSymbolStart = "2312">
+               </Location>
+               <Location
+                  uuid = "6ADD6B03-0B9F-4254-9109-9FF88A088089 - 53a015b6b77f8a5c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #2 (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in Sweetheart.UserRegistaration.sendRequest(_: Swift.String, parameters: Swift.Dictionary&lt;Swift.String, Swift.String&gt;, completion: (Swift.Optional&lt;Swift.Dictionary&lt;Swift.String, Any&gt;&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "Sweetheart"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/anmin/Desktop/Sweetheart/Sweetheart/Registration/UserSettings.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "339"
+                  endingLineNumber = "339"
+                  offsetFromSymbolStart = "132">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

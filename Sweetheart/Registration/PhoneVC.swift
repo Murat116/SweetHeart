@@ -92,10 +92,28 @@ class PhoneVC: UIViewController{
     }
     
     @objc func sendCode(){
-        guard self.phomeIsValid else { return }
-        let vc = PaswordVC()
-        vc.phone = self.phoneFiled.text
-        self.navigationController?.pushViewController(vc, animated: true)
+        guard self.phomeIsValid, let number = self.phoneFiled.phoneNumber?.nationalNumber, let code = self.phoneFiled.phoneNumber?.countryCode else { return }
+//
+        let url = URL(string: "https://valentinkilar.herokuapp.com/smsSend?phone=\(code)\(number)")!
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный формат номера", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                let vc = PaswordVC()
+                vc.phone = "\(code)\(number)"
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
+        }
+
+        task.resume()
+        
     }
     
     @objc func textFieldTyping(textField:UITextField)

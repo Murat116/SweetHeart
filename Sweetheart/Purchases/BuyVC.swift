@@ -181,10 +181,21 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
                 guard let user = Datamanager.shared.curentUser else { return }
                 var coins  = user.coins
                 coins += TypeOfSell.allCases[indexPath.row].count
+//                https://valentinkilar.herokuapp.com/userUpdate?phone=79872174506&votedfor=79872174506&likes=30&balance=30&balanceoperation=minus
+                let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=79872174506&balanceoperation=minus&value=\(coins)")
+                let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                    guard error == nil else {
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                            self.present(alert, animated: true)
+                        }
+                        return
+                    }
                 Datamanager.shared.updateProperty(of: user, value: coins, for: #keyPath(UserModel.coins))
                 self?.balance.setTitle(String(coins), for: .normal)
             case .failure(let error):
-                let alert = UIAlertController(title: "Сбой в обишки покуки", message: error.localizedDescription, preferredStyle: .alert)
+                let alert = UIAlertController(title: "Сбой в покуки", message: error.localizedDescription, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default))
                 self?.present(alert, animated: true, completion: nil)
             }

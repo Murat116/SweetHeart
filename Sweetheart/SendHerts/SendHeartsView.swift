@@ -48,7 +48,7 @@ class SendHertsVC: UIViewController{
     }
     var isFree: Bool {
         get{
-            guard let anotherUser = self.anotherUser else { return false}
+            guard let anotherUser = self.anotherUser else { return true}
             guard let votes = (self.curentUser.votesData?.jsonDictionary ?? [:])[anotherUser.phone] as? Int else { return true}
             return votes < 1
         }
@@ -335,15 +335,46 @@ class SendHertsVC: UIViewController{
     @objc func sendSms(){
         guard let anotherUser = self.anotherUser else { return }
         let valentines = anotherUser.valentines + self.countHerts
-        Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
-        if !self.isFree || self.countHerts > 1{
-            let valent = self.curentUser.coins - self.countHerts + (self.isFree ? 1 : 0)
-            Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.coins))
+        
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=\(String(self.curentUser.phone))&votedfor=\(String(anotherUser.phone))&likes=\(self.countHerts)") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
         }
-        var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
-        votes[anotherUser.phone] = 1
-        Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
-        self.navigationController?.popViewController(animated: true)
+        
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
+                //если у пользователя нет бесплатного лайка или общее количество лайков больше одного значит он использует доанытные
+                if !self.isFree || self.countHerts > 1{
+                    //из баланса списываем количество отправленных лайков - 1(если есть бесплатный лайк)
+                    let valent = self.curentUser.coins - self.countHerts + (self.isFree ? 1 : 0)
+                    Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.coins))
+                    
+                }
+                
+                var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
+                votes[anotherUser.phone] = 1
+                Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
+                self.navigationController?.popViewController(animated: true)
+            }
+        }
+        
+        task.resume()
+        
+    }
+    
+    func changeuserCoins(){
+        //        https://valentinkilar.herokuapp.com/userUpdate
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
@@ -411,35 +442,91 @@ class SendHertsVC: UIViewController{
     
     func getUser(value: String?){
         
-        //send user -> get user
-        if value != nil {
-            self.anotherUser = Datamanager.shared.createUser(with: value!, type: .another) //test
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String(value!))") else { return }
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String(value!))") else { return }
+        
+        
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            
+            guard let jsoon = data?.jsonDictionary else {
+                self.anotherUser = UserModel.createUser(phone: value!, type: .another)
+                self.usergeteed()
+                return
+            }
+            DispatchQueue.main.async {
+                let user = UserModel.createUser(phone: value!, type: .another)
+                user.name = jsoon["Name"] as? String
+                user.instagram = jsoon["Insta"] as? String
+                self.anotherUser = user
+                
+                self.usergeteed()
+            }
+            
+            let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
+                guard error == nil else {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                        self.present(alert, animated: true)
+                    }
+                    return
+                }
+                
+                guard let json = data?.jsonDictionary,
+                      let byteArray = json["Photo"] as? String,
+                      let data = Data(base64Encoded: byteArray)  else { return }
+                
+                
+                DispatchQueue.main.async {
+                    self.avatarView.image = UIImage(data: data)
+                }
+            }
+            taskImage.resume()
         }
         
-        if self.isFree || self.maxHerts >= 1{
-            self.countHerts = 1
-        }else{
-            self.countHerts = 0
+        if value == nil {
+            self.usergeteed()
+        }else {
+            task.resume()
         }
         
-        self.checkColors(oldValue: self.countHerts)
-        
-        guard self.countHerts != 0 else { return }
-        
-        self.countLabel.textColor = UIColor(r: 255, g: 95, b: 45)
-        self.minusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.plusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        
-        self.sendBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
-        self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
-        
-        guard value != nil else { return }
-        self.name.text = "Саня"
-        self.insta.text = "@pepa_desh"
-        self.avatarView.image = UIImage(named: "testPhoto")
-        self.name.isHidden = false
-        self.insta.isHidden = false
+    }
+    
+    func usergeteed(){
+        DispatchQueue.main.async {
+            
+            if self.isFree || self.maxHerts >= 1{
+                self.countHerts = 1
+            }else{
+                self.countHerts = 0
+            }
+            
+            self.checkColors(oldValue: self.countHerts)
+            
+            guard self.countHerts != 0 else { return }
+            
+            self.countLabel.textColor = UIColor(r: 255, g: 95, b: 45)
+            self.minusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            self.plusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            
+            self.sendBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+            self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
+            
+            self.name.text = self.anotherUser?.name ?? "Еще не с нами"
+            self.insta.text = self.anotherUser?.instagram ?? (self.anotherUser == nil ? "Мы уведомим о вашей отправленной валентики" : "")
+            self.avatarView.image = UIImage(named: "testPhoto")
+            self.name.isHidden = false
+            self.insta.isHidden = false
+        }
     }
     
     func checkColors(oldValue: Int){

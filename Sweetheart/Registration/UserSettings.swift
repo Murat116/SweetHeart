@@ -276,9 +276,78 @@ class UserRegistaration: UIViewController {
     }
     
     func configure(state: VCState, isUserInit: Bool = false){
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=79872174506") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+
+            guard let json = data?.jsonDictionary else { return  }
+            DispatchQueue.main.async {
+                if let name = json["Name"] as? String, name != self.userModel.name {
+                    Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
+                }
+                
+                if let name = json["Balance"] as? Float, name != Float(self.userModel.coins) {
+                    Datamanager.shared.updateProperty(of: self.userModel, value: Int(name), for: #keyPath(UserModel.coins))
+                }
+                
+                if let name = json["Insta"] as? String, name != self.userModel.instagram {
+                    Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.instagram))
+                }
+                
+                if let name = json["VotedFor"] as? [String:Any], name.jsonData != self.userModel.votesData {
+                    Datamanager.shared.updateProperty(of: self.userModel, value: name.jsonData, for: #keyPath(UserModel.votesData))
+                }
+                
+                if let name = json["Likes"] as? Int, name != self.userModel.valentines {
+                    Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.valentines ))
+                }
+            }
+           
+            
+        }
+
+        task.resume()
+        
+        
         self.isUserInit = isUserInit
         self.backBtn.isHidden = state == .edit
         self.state = state
+    }
+    
+    func sendRequest(_ url: String, parameters: [String: String], completion: @escaping ([String: Any]?, Error?) -> Void) {
+        var components = URLComponents(string: url)!
+        components.queryItems = parameters.map { (key, value) in
+            URLQueryItem(name: key, value: value)
+        }
+        components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+        let request = URLRequest(url: components.url!)
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data,                            // is there data
+                let response = response as? HTTPURLResponse,  // is there HTTP response
+                (200 ..< 300) ~= response.statusCode,         // is statusCode 2XX
+                error == nil else {                           // was there no error, otherwise ...
+                    completion(nil, error)
+                    return
+            }
+
+            let responseObject = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            completion(responseObject, nil)
+        }
+        task.resume()
     }
     
     @objc func edit(btn: UIButton){
@@ -299,13 +368,40 @@ class UserRegistaration: UIViewController {
     @objc func save(){
         let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
         let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
+        let imgData = self.avatarView.image?.pngData()
+        
+                    var parameters = [String: String]()
+        if name != Datamanager.shared.curentUser?.name {
+            parameters["name"] = name
+            parameters["insta"] = Datamanager.shared.curentUser?.instagram
+        }
+        
+        if insta != Datamanager.shared.curentUser?.instagram {
+            parameters["insta"] = name
+        }
+        
+        if imgData != Datamanager.shared.curentUser?.imageData {
+            //send to server
+        }
+        
+        parameters["phone"] = "79872174506"
+        
+        self.sendRequest("https://valentinkilar.herokuapp.com/userUpdate", parameters: parameters) { (_, error) in
+            guard error != nil else { return }
+            let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+         
         Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
         Datamanager.shared.updateProperty(of: self.userModel, value: insta, for: #keyPath(UserModel.instagram))
-        Datamanager.shared.updateProperty(of: self.userModel, value: self.avatarView.image?.pngData() as Any, for: #keyPath(UserModel.imageData))
+        Datamanager.shared.updateProperty(of: self.userModel, value: imgData, for: #keyPath(UserModel.imageData))
         self.saveBtn.isHidden = true
         self.cancel.isHidden = true
         self.editbtn.isHidden = false
         self.state = .view
+    
         guard self.isUserInit else { return }
         let vc = MainVC()
         let navigationViewController = UINavigationController(rootViewController: vc)

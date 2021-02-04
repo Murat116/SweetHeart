@@ -134,12 +134,49 @@ class PaswordVC: UIViewController {
     }
     
     @objc func sendCode(){
-        Datamanager.shared.createUser(with: self.phone, type: .curent)
-        let vc = UserRegistaration()
-        vc.configure(state: .edit, isUserInit: true)
-        self.navigationController?.pushViewController(vc, animated: true)
+        var code: String = ""
+        for subview in self.subviews{
+            guard let tf = subview as? UITextField, let text = tf.text, text.count == 1 else { return }
+            code.append(text)
+        }
+        guard code.count == 5 else { return }
+        
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/phoneConfirm?phone=\(String(self.phone))&code=\(String(code))") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                Datamanager.shared.createUser(with: self.phone, type: .curent) { (suc) in
+                    guard suc else {
+                        let alert = UIAlertController(title: "Ошибка при регистрации", message: "Попробуйте позже", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                        self.present(alert, animated: true)
+                        return
+                    }
+                    let vc = UserRegistaration()
+                    vc.configure(state: .edit, isUserInit: true)
+                    self.navigationController?.pushViewController(vc, animated: true)
+                }
+            }
+        }
+
+        task.resume()
+        
+        
     }
-    
+
     @objc func back(){
         self.navigationController?.popViewController(animated: true)
     }
