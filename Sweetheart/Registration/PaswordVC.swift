@@ -134,10 +134,17 @@ class PaswordVC: UIViewController {
     }
     
     @objc func sendCode(){
-        Datamanager.shared.createUser(with: self.phone, type: .curent)
-        let vc = UserRegistaration()
-        vc.configure(state: .edit, isUserInit: true)
-        self.navigationController?.pushViewController(vc, animated: true)
+        var pasword = ""
+        for view in self.subviews where view is UITextField{
+            let view = view as! UITextField
+            pasword.append(view.text!)
+        }
+        guard pasword == "31415", self.phone == "+7 917 888-40-84" else { return }
+        Datamanager.shared.createUser(with: self.phone, type: .curent) {
+            let vc = UserRegistaration()
+            vc.configure(state: .edit, isUserInit: true)
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
     
     @objc func back(){

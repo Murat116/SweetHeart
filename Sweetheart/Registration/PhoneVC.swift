@@ -94,7 +94,7 @@ class PhoneVC: UIViewController{
     @objc func sendCode(){
         guard self.phomeIsValid else { return }
         let vc = PaswordVC()
-        vc.phone = self.phoneFiled.text
+        vc.phone = self.phoneFiled.phoneNumber?.numberString
         self.navigationController?.pushViewController(vc, animated: true)
     }
     

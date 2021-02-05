@@ -96,11 +96,12 @@ struct Datamanager {
     
     
     @discardableResult
-    func createUser(with phone: String, type: UserType) -> UserModel{
+    func createUser(with phone: String, type: UserType, complition: (() -> ())? = nil) -> UserModel{
         let user = UserModel.createUser(phone: phone, type: type)
         do{
             try realm?.write{
                 self.realm?.add(user)
+                complition?()
             }
         }catch{
             print(error)

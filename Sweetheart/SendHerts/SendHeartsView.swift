@@ -43,7 +43,7 @@ class SendHertsVC: UIViewController{
     
     var maxHerts: Int {
         get{
-            return Datamanager.shared.curentUser!.coins
+            return 1000000//Datamanager.shared.curentUser!.coins
         }
     }
     var isFree: Bool {
@@ -58,6 +58,16 @@ class SendHertsVC: UIViewController{
     var countHerts: Int = -1 {
         didSet{
             guard self.countHerts != oldValue else { return }
+            if self.countHerts <= 0 {
+                self.countHerts = 0
+                self.isRuning = false
+                self.timer?.invalidate()
+            }
+            if self.countHerts > self.maxHerts + (self.isFree ? 1 : 0) {
+                self.countHerts = self.maxHerts + (self.isFree ? 1 : 0)
+                self.isRuning = false
+                self.timer?.invalidate()
+            }
             self.checkColors(oldValue: oldValue)
         }
     }
@@ -280,7 +290,7 @@ class SendHertsVC: UIViewController{
         self.minusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
         self.minusBtn.layer.cornerRadius = 5
         
-        self.minusBtn.addTarget(self, action: #selector(self.changeCount(sender:)), for: .touchUpInside)
+        self.minusBtn.addTarget(self, action: #selector(self.changeCount(sender:)), for: [.touchDown,.touchUpInside])
         
         self.view.addSubview(self.plusBtn)
         self.plusBtn.translatesAutoresizingMaskIntoConstraints = false
@@ -294,7 +304,7 @@ class SendHertsVC: UIViewController{
         self.plusBtn.setTitleColor(UIColor(r: 185, g: 185, b: 185), for: .normal)
         self.plusBtn.layer.cornerRadius = 5
         
-        self.plusBtn.addTarget(self, action: #selector(self.changeCount(sender:)), for: .touchUpInside)
+        self.plusBtn.addTarget(self, action: #selector(self.changeCount(sender:)), for: [.touchDown,.touchUpInside])
         
         self.countLabel.textColor = UIColor(r: 185, g: 185, b: 185)
         self.minusBtn.backgroundColor = UIColor(r: 247, g: 247, b: 247)
@@ -363,10 +373,32 @@ class SendHertsVC: UIViewController{
         self.needApp = false
     }
     
+    var timer: Timer? = nil
+    
+    var repetsCount: Int = 0
+    
+    var isRuning: Bool = false {
+        didSet{
+            guard !self.isRuning else { return }
+            self.repetsCount = 0
+        }
+    }
+    
     @objc func changeCount(sender: UIButton){
-        guard (self.countHerts != self.maxHerts + (self.isFree ? 1 : 0) || sender == self.minusBtn) && self.countHerts > 0 else { return }
-        guard self.textFieldType != .none else { return }
-        self.countHerts += sender == self.minusBtn ? -1 : 1
+        self.isRuning = !self.isRuning
+        guard self.isRuning else {
+            self.timer?.invalidate()
+            return
+        }
+        self.timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { timer in
+            guard (self.countHerts != self.maxHerts + (self.isFree ? 1 : 0) || sender == self.minusBtn) && self.countHerts > 0 else { self.timer?.invalidate(); return }
+            guard self.textFieldType != .none else { self.timer?.invalidate(); return }
+            self.repetsCount += 1
+            let dif: Float = Float(self.repetsCount) /  (2 / Float(self.repetsCount))
+            let value = Int(sender == self.minusBtn ? -1 * dif  : 1 * dif)
+            self.countHerts += value == 0 ? (sender == self.minusBtn ? -1  : 1) : value
+        }
+        self.timer?.fire()
     }
     
     @objc func changeType(sender: UIButton){
