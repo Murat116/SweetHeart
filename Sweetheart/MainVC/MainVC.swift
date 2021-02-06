@@ -18,9 +18,13 @@ class MainVC: UIViewController{
     
     var sendBtn = UIButton()
     
-    var userModel: UserModel = Datamanager.shared.curentUser!
+    var userModel: UserModel { get {Datamanager.shared.curentUser! } }
     
-    var alluser: [UserModel] = Datamanager.shared.anotherUsers
+    var alluser: [UserModel]  {
+        get{ Datamanager.shared.anotherUsers }
+    }
+    
+    var refreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +49,7 @@ class MainVC: UIViewController{
         self.meBtn.widthAnchor.constraint(equalTo: self.meBtn.heightAnchor).isActive = true
         
         self.meBtn.addTarget(self, action: #selector(self.openMeView), for: .touchUpInside)
-        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
+        let image = self.userModel.imageData != nil && !(self.userModel.imageData?.isEmpty ?? true) ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.meBtn.setImage(image, for: .normal)
     
         self.meBtn.contentEdgeInsets = .zero
@@ -128,12 +132,96 @@ class MainVC: UIViewController{
 
         self.view.layoutIfNeeded()
         self.meBtn.layer.cornerRadius = self.meBtn.frame.height / 2
+        
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+           refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+           tableView.addSubview(refreshControl)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tableView.reloadData()
         self.balance.setTitle(String(self.userModel.coins), for: .normal)
+    }
+    
+    @objc func refresh(_ sender: AnyObject) {
+
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?all=1") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            guard let data = data, let dict: [[String: Any]] = data.elements() else { return }
+            DispatchQueue.main.async {
+                for user in self.alluser where user.type != .curent {
+                    do{
+                        try Datamanager.shared.realm?.write{
+                            Datamanager.shared.realm?.delete(user)
+                        }
+                    }catch{
+                        print(error)
+                    }
+                }
+    
+                for value in dict{
+                    guard let phone = value["ID"] as? Int, let like = value["Likes"] as? Int else { continue }
+                    let user = UserModel.createUser(phone: String(phone), type: .another)
+                    user.valentines = like
+                    
+                    if  let val = value["Insta"] as? String{
+                        user.instagram = val
+                    }
+                    
+                    do{
+                        try Datamanager.shared.realm?.write{
+                            Datamanager.shared.realm?.add(user)
+                        }
+                    }catch{
+                        print(error)
+                    }
+                    guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String(user.phone))") else { return }
+                    let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
+                        guard error == nil else {
+                            DispatchQueue.main.async {
+                                let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                                alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                                self.present(alert, animated: true)
+                            }
+                            return
+                        }
+                        
+                        guard let json = data?.jsonDictionary,
+                              let byteArray = json["Photo"] as? String,
+                              let data = Data(base64Encoded: byteArray)  else { return }
+                        
+                        
+                        DispatchQueue.main.async {
+                            Datamanager.shared.updateProperty(of: user, value: data, for: #keyPath(UserModel.imageData))
+                            let index = self.alluser.firstIndex{$0.id == user.id}
+                            self.tableView.reloadRows(at: [IndexPath(row: index!, section: 0)], with: .automatic)
+                        }
+                    }
+                    
+                    taskImage.resume()
+                    
+                }
+                self.tableView.reloadData()
+                self.refreshControl.endRefreshing()
+            }
+        }
+
+        task.resume()
     }
     
     @objc func openMeView(){
@@ -175,5 +263,12 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate{
         vc.textFieldType = .name
         self.navigationController?.pushViewController(vc, animated: true)
         
+    }
+}
+
+
+extension Data {
+    func elements () -> [[String:Any]]? {
+        return try! JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]]
     }
 }

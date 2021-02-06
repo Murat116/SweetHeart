@@ -20,6 +20,7 @@
 		45366BCC25C48B1B0010ED2C /* MainVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCB25C48B1B0010ED2C /* MainVC.swift */; };
 		45366BCF25C48F1A0010ED2C /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BCE25C48F1A0010ED2C /* UserCell.swift */; };
 		45366BD225C5B24C0010ED2C /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45366BD125C5B24C0010ED2C /* UIColor.swift */; };
+		4568AA3B25CDEEA90005C3EF /* Loader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4568AA3A25CDEEA90005C3EF /* Loader.swift */; };
 		45DE36B425C9D9D400950230 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DE36B325C9D9D400950230 /* Purchases.swift */; };
 		45DE36B825CA0D6D00950230 /* PhoneVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DE36B725CA0D6C00950230 /* PhoneVC.swift */; };
 		45DE36C225CA15D100950230 /* PhoneNumberKit in Frameworks */ = {isa = PBXBuildFile; productRef = 45DE36C125CA15D100950230 /* PhoneNumberKit */; };
@@ -56,6 +57,7 @@
 		45366BCB25C48B1B0010ED2C /* MainVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVC.swift; sourceTree = "<group>"; };
 		45366BCE25C48F1A0010ED2C /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
 		45366BD125C5B24C0010ED2C /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
+		4568AA3A25CDEEA90005C3EF /* Loader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
 		45DE36B325C9D9D400950230 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		45DE36B725CA0D6C00950230 /* PhoneVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneVC.swift; sourceTree = "<group>"; };
 		45DE36C525CAAA8E00950230 /* PaswordVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaswordVC.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 			children = (
 				45E4E5FB25C5C94800640429 /* BuyVC.swift */,
 				45DE36B325C9D9D400950230 /* Purchases.swift */,
+				4568AA3A25CDEEA90005C3EF /* Loader.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -244,6 +247,7 @@
 				452D768325C202E5005AC27F /* SignIn.swift in Sources */,
 				45366BCC25C48B1B0010ED2C /* MainVC.swift in Sources */,
 				45E4E5F925C5C91400640429 /* SendHeartsView.swift in Sources */,
+				4568AA3B25CDEEA90005C3EF /* Loader.swift in Sources */,
 				45E4E60025C5CB5A00640429 /* UserContacts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

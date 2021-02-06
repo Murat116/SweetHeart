@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PaswordVC: UIViewController {
+class PaswordVC: LoaderVC {
     
     var backBtn = UIButton()
     var weloomeLabel = UILabel()
@@ -147,6 +147,8 @@ class PaswordVC: UIViewController {
             self.present(alert, animated: true)
             return
         }
+        
+        self.showSpinner()
 
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
             guard error == nil else {
@@ -154,6 +156,7 @@ class PaswordVC: UIViewController {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
                     self.present(alert, animated: true)
+                    self.hideSpinner()
                 }
                 return
             }
@@ -163,11 +166,13 @@ class PaswordVC: UIViewController {
                         let alert = UIAlertController(title: "Ошибка при регистрации", message: "Попробуйте позже", preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "Ок", style: .default))
                         self.present(alert, animated: true)
+                        self.hideSpinner()
                         return
                     }
                     let vc = UserRegistaration()
                     vc.configure(state: .edit, isUserInit: true)
                     self.navigationController?.pushViewController(vc, animated: true)
+                    self.hideSpinner()
                 }
             }
         }

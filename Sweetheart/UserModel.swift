@@ -70,16 +70,7 @@ struct Datamanager {
         get{
             guard let usersSet = self.anotherUsersSet else { return []}
             var array = Array(usersSet)
-            if array.isEmpty {
-                for i in 0...6{
-                    let user = Datamanager.shared.createUser(with: String(i), type: .another)
-                    Datamanager.shared.updateProperty(of: user, value: name[i], for: #keyPath(UserModel.name))
-                    Datamanager.shared.updateProperty(of: user, value: inst[i], for: #keyPath(UserModel.instagram))
-                    Datamanager.shared.updateProperty(of: user, value: UIImage(named: "test\(i)")?.pngData(), for: #keyPath(UserModel.imageData))
-                    Datamanager.shared.updateProperty(of: user, value: Int.random(in: 0...723), for: #keyPath(UserModel.valentines))
-                    array.append(user)
-                }
-            }
+            
             if self.curentUser != nil {
                 array.append(self.curentUser!)
             }

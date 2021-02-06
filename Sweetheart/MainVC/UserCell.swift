@@ -83,7 +83,7 @@ class UserCell: UITableViewCell{
     }
     
     func configure(with model: UserModel, number: Int){
-        let image = model.imageData != nil ? UIImage(data: model.imageData!) : UIImage(named: "avatar")
+        let image =  model.imageData != nil && !(model.imageData?.isEmpty ?? true) ? UIImage(data: model.imageData!) : UIImage(named: "avatar")
         self.avatar.image = image
         self.number.text = String(number + 1)
         self.name.text = model.name ?? "User"

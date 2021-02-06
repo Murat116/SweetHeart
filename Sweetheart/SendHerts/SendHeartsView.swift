@@ -8,7 +8,7 @@
 import UIKit
 import PhoneNumberKit
 
-class SendHertsVC: UIViewController{
+class SendHertsVC: LoaderVC{
     
     var curentUser: UserModel {
         get {
@@ -96,7 +96,7 @@ class SendHertsVC: UIViewController{
             if self.textFieldType == .name, let user = self.anotherUser
             {
                 self.textField.text = user.name
-                let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+                let image = user.imageData != nil && !(user.imageData?.isEmpty ?? true) ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
                 self.avatarView.image = image
                 self.name.text = user.name
                 self.insta.text = user.instagram
@@ -326,7 +326,7 @@ class SendHertsVC: UIViewController{
         self.textField.attributedPlaceholder = NSAttributedString(string: "Номер пользователя", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.phomeTypeBtn.backgroundColor = UIColor(r: 255, g: 219, b: 208)
         self.phomeTypeBtn.setTitleColor(UIColor(r: 222, g: 65, b: 16), for: .normal)
-        let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+        let image = user.imageData != nil && !(user.imageData?.isEmpty ?? true) ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
         self.avatarView.image = image
         self.getUser(value: nil)
         
@@ -442,8 +442,8 @@ class SendHertsVC: UIViewController{
     
     func getUser(value: String?){
         
-        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String(value!))") else { return }
-        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String(value!))") else { return }
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String((value ?? self.anotherUser?.phone)!))") else { return }
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String((value ?? self.anotherUser?.phone)!))") else { return }
         
         
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
@@ -452,6 +452,7 @@ class SendHertsVC: UIViewController{
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
                     self.present(alert, animated: true)
+                    self.hideSpinner()
                 }
                 return
             }
@@ -459,6 +460,7 @@ class SendHertsVC: UIViewController{
             guard let jsoon = data?.jsonDictionary else {
                 self.anotherUser = UserModel.createUser(phone: value!, type: .another)
                 self.usergeteed()
+                self.hideSpinner()
                 return
             }
             DispatchQueue.main.async {
@@ -476,17 +478,19 @@ class SendHertsVC: UIViewController{
                         let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "Ок", style: .default))
                         self.present(alert, animated: true)
+                        self.hideSpinner()
                     }
                     return
                 }
                 
                 guard let json = data?.jsonDictionary,
                       let byteArray = json["Photo"] as? String,
-                      let data = Data(base64Encoded: byteArray)  else { return }
+                      let data = Data(base64Encoded: byteArray)  else {self.hideSpinner(); return }
                 
                 
                 DispatchQueue.main.async {
                     self.avatarView.image = UIImage(data: data)
+                    self.hideSpinner()
                 }
             }
             taskImage.resume()
@@ -495,6 +499,7 @@ class SendHertsVC: UIViewController{
         if value == nil {
             self.usergeteed()
         }else {
+            self.showSpinner()
             task.resume()
         }
         

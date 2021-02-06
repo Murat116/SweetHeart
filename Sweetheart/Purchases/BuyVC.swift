@@ -8,7 +8,7 @@
 import UIKit
 import StoreKit
 
-class BuyVC: UIViewController{
+class BuyVC: LoaderVC{
     
     var herts: Int {
         get{
@@ -29,19 +29,6 @@ class BuyVC: UIViewController{
             self.tableView.reloadData()
         }
     }
-    
-    lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
-        self.view.addSubview(view)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
-        view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
-        view.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        view.widthAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        
-        view.hidesWhenStopped = true
-        return view
-    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -136,18 +123,7 @@ class BuyVC: UIViewController{
         self.navigationController?.popViewController(animated: true)
     }
     
-    func showSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.startAnimating()
-            self.activityIndicator.isHidden = false
-        }
-    }
-    
-    func hideSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.stopAnimating()
-        }
-    }
+   
     
     private func updateInterface(products: [SKProduct]) {
         var model = products
@@ -172,7 +148,7 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        showSpinner()
+        self.showSpinner()
         Purchases.shared.purchaseProduct(productId: TypeOfSell.allCases[indexPath.row].rawValue) { [weak self] result in
             self?.hideSpinner()
             switch result {
@@ -181,17 +157,19 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
                 guard let user = Datamanager.shared.curentUser else { return }
                 var coins  = user.coins
                 coins += TypeOfSell.allCases[indexPath.row].count
-//                https://valentinkilar.herokuapp.com/userUpdate?phone=79872174506&votedfor=79872174506&likes=30&balance=30&balanceoperation=minus
-                let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=79872174506&balanceoperation=minus&value=\(coins)")
-                let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                
+                let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=\(String(Datamanager.shared.curentUser!.phone))&balanceoperation=plus&balance=\(coins)")
+                let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
                     guard error == nil else {
                         DispatchQueue.main.async {
                             let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                             alert.addAction(UIAlertAction(title: "Ок", style: .default))
-                            self.present(alert, animated: true)
+                            self!.present(alert, animated: true)
                         }
                         return
                     }
+                }
+                task.resume()
                 Datamanager.shared.updateProperty(of: user, value: coins, for: #keyPath(UserModel.coins))
                 self?.balance.setTitle(String(coins), for: .normal)
             case .failure(let error):
@@ -200,6 +178,7 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
                 self?.present(alert, animated: true, completion: nil)
             }
         }
+        
     }
     
 }
@@ -317,6 +296,37 @@ extension SKProduct {
             return "Annual Subscription"
         default:
             return nil
+        }
+    }
+}
+
+class LoaderVC: UIViewController{
+    lazy var activityIndicator: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        self.view.addSubview(view)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        view.widthAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        
+        view.hidesWhenStopped = true
+        return view
+    }()
+    
+    
+    open func showSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+            self.view.isUserInteractionEnabled = false
+            self.activityIndicator.isHidden = false
+        }
+    }
+    
+    open func hideSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.view.isUserInteractionEnabled = true
         }
     }
 }

@@ -18,6 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
         let viewController = Datamanager.shared.curentUser == nil ? PhoneVC() : MainVC()
+        self.getUser()
 //        Datamanager.shared.createUser(with: "89178884084", type: .curent)
 //        let curentUser = Datamanager.shared.curentUser
 //        viewController.configure(with: curentUser!, state: .edit)
@@ -27,6 +28,58 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window?.rootViewController = navigationViewController
         self.window?.makeKeyAndVisible()
         self.window?.windowScene = windowScene
+    }
+    
+    
+    func getUser(){
+        guard let userModel = Datamanager.shared.curentUser else { return }
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String(userModel.phone))") else { return }
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else { return }
+            
+            guard let json = data?.jsonDictionary else { return  }
+            DispatchQueue.main.async {
+            if let name = json["Name"] as? String, name != userModel.name {
+                    Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.name))
+                }
+                
+                if let name = json["Balance"] as? Float, name != Float(userModel.coins) {
+                    Datamanager.shared.updateProperty(of: userModel, value: Int(name), for: #keyPath(UserModel.coins))
+                }
+                
+                if let name = json["Insta"] as? String, name != userModel.instagram {
+                    Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.instagram))
+                }
+                
+                if let name = json["VotedFor"] as? [String:Any], name.jsonData != userModel.votesData {
+                    Datamanager.shared.updateProperty(of: userModel, value: name.jsonData, for: #keyPath(UserModel.votesData))
+                }
+                
+                if let name = json["Likes"] as? Int, name != userModel.valentines {
+                    Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.valentines ))
+                }
+            }
+        }
+        task.resume()
+        
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(userModel.phone)") else { return }
+        let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
+            guard error == nil else { return }
+            
+            guard let json = data?.jsonDictionary,
+                  let byteArray = json["Photo"] as? String,
+                  let data = Data(base64Encoded: byteArray)  else { return }
+            DispatchQueue.main.async {
+                guard data != userModel.imageData else { return }
+                Datamanager.shared.updateProperty(of: userModel, value: data, for: #keyPath(UserModel.imageData ))
+            }
+           
+        }
+        taskImage.resume()
+
+       
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
