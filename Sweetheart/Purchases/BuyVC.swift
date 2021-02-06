@@ -155,8 +155,7 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
             case .success(let suc):
                 guard suc else { return }
                 guard let user = Datamanager.shared.curentUser else { return }
-                var coins  = user.coins
-                coins += TypeOfSell.allCases[indexPath.row].count
+                let coins  = TypeOfSell.allCases[indexPath.row].count
                 
                 let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=\(String(Datamanager.shared.curentUser!.phone))&balanceoperation=plus&balance=\(coins)")
                 let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in

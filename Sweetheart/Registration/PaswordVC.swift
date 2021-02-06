@@ -151,7 +151,7 @@ class PaswordVC: LoaderVC {
         self.showSpinner()
 
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
-            guard error == nil else {
+            guard error == nil , (response as? HTTPURLResponse)?.statusCode == 200 else {
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
@@ -161,19 +161,40 @@ class PaswordVC: LoaderVC {
                 return
             }
             DispatchQueue.main.async {
-                Datamanager.shared.createUser(with: self.phone, type: .curent) { (suc) in
-                    guard suc else {
-                        let alert = UIAlertController(title: "Ошибка при регистрации", message: "Попробуйте позже", preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
-                        self.present(alert, animated: true)
-                        self.hideSpinner()
-                        return
-                    }
-                    let vc = UserRegistaration()
-                    vc.configure(state: .edit, isUserInit: true)
-                    self.navigationController?.pushViewController(vc, animated: true)
-                    self.hideSpinner()
+                guard let json = data?.jsonDictionary,
+                      let phone = json["Phone"] as? Int,
+                      let id = json["UUID"] as? String else { return }
+                
+                let user  = UserModel.createUser(phone: String(phone), id: id, type: .curent)
+                
+                if let name = json["Name"] as? String{
+                    user.name = name
                 }
+                
+                if let like = json["Likes"] as? Int {
+                    user.valentines = like
+                }
+                
+                if let insta = json["Insta"] as? String {
+                    user.instagram = insta
+                }
+                
+                if let balance = json["Balance"] as? Int {
+                    user.coins = Int(balance)
+                }
+                
+                do{
+                    try Datamanager.shared.realm?.write{
+                        Datamanager.shared.realm?.add(user)
+                        let vc = UserRegistaration()
+                        vc.configure(state: .edit, isUserInit: true)
+                        self.navigationController?.pushViewController(vc, animated: true)
+                        self.hideSpinner()
+                    }
+                }catch{
+                    print(error)
+                }
+                
             }
         }
 

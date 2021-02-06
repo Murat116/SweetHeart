@@ -95,27 +95,28 @@ class PhoneVC: LoaderVC{
         guard self.phomeIsValid, let number = self.phoneFiled.phoneNumber?.nationalNumber, let code = self.phoneFiled.phoneNumber?.countryCode else { return }
         
         self.showSpinner()
-//        let url = URL(string: "https://valentinkilar.herokuapp.com/smsSend?phone=\(code)\(number)")!
-//
-//        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
-//            guard error == nil else {
-//                DispatchQueue.main.async {
-//                    let alert = UIAlertController(title: "Неправильный формат номера", message: error?.localizedDescription, preferredStyle: .alert)
-//                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
-//                    self.present(alert, animated: true)
-//                    self.hideSpinner()
-//                }
-//                return
-//            }
-//            DispatchQueue.main.async {
+        let url = URL(string: "https://valentinkilar.herokuapp.com/smsSend?phone=\(code)\(number)")!
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil, (response as? HTTPURLResponse)?.statusCode == 200 else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный формат номера", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                    self.hideSpinner()
+                }
+                return
+            }
+
+            DispatchQueue.main.async {
                 let vc = PaswordVC()
                 vc.phone = "\(code)\(number)"
                 self.navigationController?.pushViewController(vc, animated: true)
                 self.hideSpinner()
-//            }
-//        }
+            }
+        }
 
-//        task.resume()
+        task.resume()
         
     }
     

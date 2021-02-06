@@ -462,14 +462,14 @@ class SendHertsVC: LoaderVC{
                 return
             }
             
-            guard let jsoon = data?.jsonDictionary else {
+            guard let jsoon = data?.jsonDictionary, let phone = jsoon["Phone"] as? Int else {
                 self.anotherUser = UserModel.createUser(phone: value!, type: .another)
                 self.usergeteed()
                 self.hideSpinner()
                 return
             }
             DispatchQueue.main.async {
-                let user = UserModel.createUser(phone: value!, type: .another)
+                let user = UserModel.createUser(phone: String(phone), type: .another)
                 user.name = jsoon["Name"] as? String
                 user.instagram = jsoon["Insta"] as? String
                 self.anotherUser = user

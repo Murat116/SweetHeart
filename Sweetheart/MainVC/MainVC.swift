@@ -182,7 +182,7 @@ class MainVC: UIViewController{
             return
         }
         
-        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+        let task = URLSession.shared.dataTask(with: url) {(dataAttay, response, error) in
             guard error == nil else {
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
@@ -191,7 +191,7 @@ class MainVC: UIViewController{
                 }
                 return
             }
-            guard let data = data, let dict: [[String: Any]] = data.elements() else { return }
+            guard let data = dataAttay, let dict: [[String: Any]] = data.elements() else { return }
             DispatchQueue.main.async {
                 for user in self.alluser where user.type != .curent {
                     do{
@@ -204,7 +204,7 @@ class MainVC: UIViewController{
                 }
     
                 for value in dict{
-                    guard let phone = value["ID"] as? Int, let like = value["Likes"] as? Int else { continue }
+                    guard let phone = value["Phone"] as? Int, let like = value["Likes"] as? Int else { continue }
                     let user = UserModel.createUser(phone: String(phone), type: .another)
                     user.valentines = like
                     

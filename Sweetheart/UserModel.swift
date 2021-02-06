@@ -33,10 +33,13 @@ class UserModel: Object {
         }
     }
     
-     static func createUser(phone: String, type: UserType) -> UserModel{
+    static func createUser(phone: String, id: String? = nil, type: UserType) -> UserModel{
         let user = UserModel()
         user.phone = phone
         user.type = type
+        if id != nil {
+            user.id = id!
+        }
         return user
     }
 }
