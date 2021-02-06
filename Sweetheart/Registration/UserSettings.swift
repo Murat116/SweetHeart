@@ -335,7 +335,25 @@ class UserRegistaration: UIViewController {
         }
         
         if imgData != Datamanager.shared.curentUser?.imageData {
-            //send to server
+            
+            
+            let base64: String = imgData!.base64EncodedString(options: .lineLength64Characters)
+            do{
+                let url: URL = try URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String(Datamanager.shared.curentUser!.phone))&set=\(base64)")!
+            }catch{
+                print(error.localizedDescription)
+            }
+//            let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
+//                guard error == nil else {
+//                    DispatchQueue.main.async {
+//                        let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+//                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+//                        self.present(alert, animated: true)
+//                    }
+//                    return
+//                }
+//            }
+//            task.resume()
         }
         
         parameters["phone"] = Datamanager.shared.curentUser?.phone
