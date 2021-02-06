@@ -441,8 +441,13 @@ class SendHertsVC: LoaderVC{
     }
     
     func getUser(value: String?){
-        
-        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String((value ?? self.anotherUser?.phone)!))") else { return }
+        let string: String
+        if self.textFieldType == .id{
+            string = "https://valentinkilar.herokuapp.com/userGet?uuid=\(String((value ?? self.anotherUser?.id)!))"
+        }else{
+            string =  "https://valentinkilar.herokuapp.com/userGet?phone=\(String((value ?? self.anotherUser?.phone)!))"
+        }
+        guard let url = URL(string: string) else { return }
         guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String((value ?? self.anotherUser?.phone)!))") else { return }
         
         
@@ -526,7 +531,10 @@ class SendHertsVC: LoaderVC{
             self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
             self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
             
-            self.name.text = self.anotherUser?.name ?? "Еще не с нами"
+            self.name.text = self.anotherUser?.name ?? "Незнакомец"
+            if self.anotherUser?.name == nil, self.textField.text == nil {
+                self.textField.text = "Незнакомец"
+            }
             self.insta.text = self.anotherUser?.instagram ?? (self.anotherUser == nil ? "Мы уведомим о вашей отправленной валентики" : "")
             self.avatarView.image = UIImage(named: "testPhoto")
             self.name.isHidden = false
@@ -581,7 +589,7 @@ extension SendHertsVC: Conactdelegate{
     func getConact(name: String, phone: String) {
         do{
             let phone = try PhoneNumberKit().parse(phone)
-            let number = phone.numberString
+            let number = String(phone.countryCode) + String(phone.nationalNumber)
             self.textField.text = number
             self.getUser(value: number)
         }catch{

@@ -145,6 +145,35 @@ class MainVC: UIViewController{
     }
     
     @objc func refresh(_ sender: AnyObject) {
+        
+        guard let userModel = Datamanager.shared.curentUser else { return }
+        guard let urluser = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String(userModel.phone))") else { return }
+
+        let taskUser = URLSession.shared.dataTask(with: urluser) {(data, response, error) in
+            guard error == nil else { return }
+            
+            guard let json = data?.jsonDictionary else { return  }
+            DispatchQueue.main.async {
+            if let name = json["Name"] as? String, name != userModel.name {
+                    Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.name))
+                }
+                
+                if let name = json["Balance"] as? Float, name != Float(userModel.coins) {
+                    Datamanager.shared.updateProperty(of: userModel, value: Int(name), for: #keyPath(UserModel.coins))
+                    self.balance.setTitle(String(name), for: .normal)
+                }
+            
+                if let name = json["Likes"] as? Int, name != userModel.valentines {
+                    Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.valentines ))
+                }
+                
+                if let name = json["Position"] as? Int, name != userModel.placeInTop{
+                    Datamanager.shared.updateProperty(of: userModel, value: Int(name), for: #keyPath(UserModel.placeInTop))
+                }
+                
+            }
+        }
+        taskUser.resume()
 
         guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?all=1") else {
             let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
