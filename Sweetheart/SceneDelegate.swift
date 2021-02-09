@@ -65,7 +65,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         task.resume()
         
-        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(userModel.phone)") else { return }
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String(userModel.phone))&get=1") else { return }
         let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
             guard error == nil else { return }
             

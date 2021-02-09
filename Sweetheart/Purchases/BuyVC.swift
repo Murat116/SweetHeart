@@ -95,15 +95,15 @@ class BuyVC: LoaderVC{
         self.freeButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.freeButton.heightAnchor.constraint(equalToConstant: 49).isActive = true
         
-        self.freeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
-        self.freeButton.layer.cornerRadius = 8
-        self.freeButton.semanticContentAttribute = .forceRightToLeft
-        self.freeButton.setTitle("Получить бесплатно", for: .normal)
-        self.freeButton.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.freeButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
-        self.freeButton.backgroundColor = UIColor(r: 255, g: 239, b: 234)
-        self.freeButton.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.freeButton.tintColor = UIColor(r: 255, g: 95, b: 45)
+//        self.freeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
+//        self.freeButton.layer.cornerRadius = 8
+//        self.freeButton.semanticContentAttribute = .forceRightToLeft
+//        self.freeButton.setTitle("Получить бесплатно", for: .normal)
+//        self.freeButton.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
+//        self.freeButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
+//        self.freeButton.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+//        self.freeButton.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+//        self.freeButton.tintColor = UIColor(r: 255, g: 95, b: 45)
         
         self.view.addSubview(self.tableView)
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -117,6 +117,8 @@ class BuyVC: LoaderVC{
         self.tableView.dataSource = self
         
         self.tableView.register(BuyCell.self, forCellReuseIdentifier: "BuyCell")
+        
+        self.tableView.showsVerticalScrollIndicator = false
     }
     
     @objc func back(){
@@ -254,7 +256,7 @@ enum TypeOfSell: String, CaseIterable{
     case hundred = "hopeTo.Sweetheart.hundreed"
     case twoFifty = "hopeTo.Sweetheart.twoFifty"
     case fiveFundred = "hopeTo.Sweetheart.oneFiveZeroZero"
-    case crazy = "hopeTo.Sweetheart.crazy"
+//    case crazy = "hopeTo.Sweetheart.crazy"
     
     var count : Int  {
         switch self {
@@ -270,8 +272,8 @@ enum TypeOfSell: String, CaseIterable{
             return 250
         case .fiveFundred:
             return  500
-        case .crazy:
-            return 30000
+//        case .crazy:
+//            return 30000
         }
     }
 }

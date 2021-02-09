@@ -13,7 +13,11 @@ class UserModel: Object {
     @objc dynamic var id = UUID().uuidString
     @objc private(set) dynamic var phone: String = ""
     @objc dynamic var name: String?
-    @objc dynamic var instagram: String?
+    @objc dynamic var instagram: String? {
+        didSet{
+            print("change")
+        }
+    }
     @objc dynamic var coins: Int = 0 //купленные бабки
     @objc dynamic var valentines: Int = 0 //твои валентинки
     @objc dynamic var placeInTop: Int = 0

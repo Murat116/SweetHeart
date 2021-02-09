@@ -43,7 +43,7 @@ class SendHertsVC: LoaderVC{
     
     var maxHerts: Int {
         get{
-            return 1000000//Datamanager.shared.curentUser!.coins
+            return Datamanager.shared.curentUser!.coins
         }
     }
     var isFree: Bool {
@@ -479,8 +479,10 @@ class SendHertsVC: LoaderVC{
         }else{
             string =  "https://valentinkilar.herokuapp.com/userGet?phone=\(String((value ?? self.anotherUser?.phone)!))"
         }
+        
         guard let url = URL(string: string) else { return }
-        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String((value ?? self.anotherUser?.phone)!))") else { return }
+//        https://valentinkilar.herokuapp.com/photo?phone=79956881638&get=1
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String((value ?? self.anotherUser?.phone)!))&get=1") else { return }
         
         
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
@@ -522,11 +524,10 @@ class SendHertsVC: LoaderVC{
                 
                 guard let json = data?.jsonDictionary,
                       let byteArray = json["Photo"] as? String,
-                      let data = Data(base64Encoded: byteArray)  else {self.hideSpinner(); return }
-                
+                      let data =  NSData(base64Encoded: byteArray, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters)  else {self.hideSpinner(); return }
                 
                 DispatchQueue.main.async {
-                    self.avatarView.image = UIImage(data: data)
+                    self.avatarView.image = UIImage(data: data as Data)
                     self.hideSpinner()
                 }
             }
@@ -563,12 +564,14 @@ class SendHertsVC: LoaderVC{
             self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
             self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
             
-            self.name.text = self.anotherUser?.name ?? "Незнакомец"
+            if let name = self.anotherUser?.name{
+                self.name.text = name
+            }
             if self.anotherUser?.name == nil, self.textField.text == nil {
                 self.textField.text = "Незнакомец"
             }
             self.insta.text = self.anotherUser?.instagram ?? (self.anotherUser == nil ? "Мы уведомим о вашей отправленной валентики" : "")
-            self.avatarView.image = UIImage(named: "testPhoto")
+            self.avatarView.image = self.anotherUser?.imageData != nil && !(self.anotherUser?.imageData?.isEmpty ?? true) && self.anotherUser != nil ? UIImage(data: self.anotherUser!.imageData!) : UIImage(named: "avatar")
             self.name.isHidden = false
             self.insta.isHidden = false
         }
@@ -623,6 +626,7 @@ extension SendHertsVC: Conactdelegate{
             let phone = try PhoneNumberKit().parse(phone)
             let number = String(phone.countryCode) + String(phone.nationalNumber)
             self.textField.text = number
+            self.name.text = name
             self.getUser(value: number)
         }catch{
             let alert = UIAlertController(title: "Неправильный формат номера", message: "Выберите другой или введите позже", preferredStyle: .alert)
@@ -641,7 +645,7 @@ extension SendHertsVC: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text){
+        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text), self.textField.text?.first == "+"{
             self.getUser(value: text)
             return true
         }

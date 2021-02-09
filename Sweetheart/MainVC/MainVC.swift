@@ -204,9 +204,13 @@ class MainVC: UIViewController{
                 }
     
                 for value in dict{
-                    guard let phone = value["Phone"] as? Int, let like = value["Likes"] as? Int else { continue }
+                    guard let phone = value["Phone"] as? Int,String(phone) != self.userModel.phone, let like = value["Likes"] as? Int else { continue }
                     let user = UserModel.createUser(phone: String(phone), type: .another)
                     user.valentines = like
+                    
+                    if let val = value["Name"] as? String {
+                        user.name = val
+                    }
                     
                     if  let val = value["Insta"] as? String{
                         user.instagram = val
@@ -219,7 +223,7 @@ class MainVC: UIViewController{
                     }catch{
                         print(error)
                     }
-                    guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photoGet?phone=\(String(user.phone))") else { return }
+                    guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com//photo?phone=\(String(user.phone))&get=1") else { return }
                     let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
                         guard error == nil else {
                             DispatchQueue.main.async {

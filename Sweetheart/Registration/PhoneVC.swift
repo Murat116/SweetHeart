@@ -97,6 +97,18 @@ class PhoneVC: LoaderVC{
         self.showSpinner()
         let url = URL(string: "https://valentinkilar.herokuapp.com/smsSend?phone=\(code)\(number)")!
 
+
+        if  let date = UserDefaults.standard.value(forKey: "SenCode") as? Date {
+            let dateInteval = Date().timeIntervalSince(date)
+            guard dateInteval >= 300 else {
+                let alert = UIAlertController(title: "Вы привысили кол-во запросов", message: "", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                self.present(alert, animated: true)
+                self.hideSpinner()
+                return
+            }
+        }
+
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
             guard error == nil, (response as? HTTPURLResponse)?.statusCode == 200 else {
                 DispatchQueue.main.async {
@@ -107,7 +119,8 @@ class PhoneVC: LoaderVC{
                 }
                 return
             }
-
+            let time = Date()
+            UserDefaults.standard.setValue(time, forKeyPath: "SenCode")
             DispatchQueue.main.async {
                 let vc = PaswordVC()
                 vc.phone = "\(code)\(number)"
@@ -115,9 +128,9 @@ class PhoneVC: LoaderVC{
                 self.hideSpinner()
             }
         }
-
+//
         task.resume()
-        
+
     }
     
     @objc func textFieldTyping(textField:UITextField)

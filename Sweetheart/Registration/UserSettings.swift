@@ -322,15 +322,15 @@ class UserRegistaration: UIViewController {
     @objc func save(){
         let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
         let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
-        let imgData = self.avatarView.image?.pngData()
+        let imgData = self.resizeImage(image: self.avatarView.image, targetSize: CGSize(width: 100, height: 100))?.pngData()
         
-                    var parameters = [String: String]()
+        var parameters = [String: String]()
         if name != Datamanager.shared.curentUser?.name {
             parameters["name"] = name
-            parameters["insta"] = Datamanager.shared.curentUser?.instagram
         }
         
         if insta != Datamanager.shared.curentUser?.instagram {
+            parameters["name"] = name
             parameters["insta"] = name
         }
         
@@ -338,22 +338,16 @@ class UserRegistaration: UIViewController {
             
             
             let base64: String = imgData!.base64EncodedString(options: .lineLength64Characters)
-            do{
-                let url: URL = try URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String(Datamanager.shared.curentUser!.phone))&set=\(base64)")!
-            }catch{
-                print(error.localizedDescription)
+            var param = ["phone": String(Datamanager.shared.curentUser!.phone), "set" : base64 ]
+            self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param) { (value, error) in
+                guard error != nil else { return }
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                print("everythingISOk")
             }
-//            let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
-//                guard error == nil else {
-//                    DispatchQueue.main.async {
-//                        let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
-//                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
-//                        self.present(alert, animated: true)
-//                    }
-//                    return
-//                }
-//            }
-//            task.resume()
         }
         
         parameters["phone"] = Datamanager.shared.curentUser?.phone
@@ -367,18 +361,18 @@ class UserRegistaration: UIViewController {
         }
         
         DispatchQueue.main.async {
-            Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
-            Datamanager.shared.updateProperty(of: self.userModel, value: insta, for: #keyPath(UserModel.instagram))
+            Datamanager.shared.updateProperty(of: self.userModel, value: name!, for: #keyPath(UserModel.name))
+            Datamanager.shared.updateProperty(of: self.userModel, value: insta!, for: #keyPath(UserModel.instagram))
             if imgData != nil {
-                Datamanager.shared.updateProperty(of: self.userModel, value: imgData, for: #keyPath(UserModel.imageData))
+                Datamanager.shared.updateProperty(of: self.userModel, value: imgData!, for: #keyPath(UserModel.imageData))
             }
+            
+            self.saveBtn.isHidden = true
+            self.cancel.isHidden = true
+            self.editbtn.isHidden = false
+            self.state = .view
         }
         
-        self.saveBtn.isHidden = true
-        self.cancel.isHidden = true
-        self.editbtn.isHidden = false
-        self.state = .view
-    
         guard self.isUserInit else { return }
         let vc = MainVC()
         let navigationViewController = UINavigationController(rootViewController: vc)
@@ -411,6 +405,33 @@ extension UserRegistaration: UITextFieldDelegate{
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         
+    }
+    
+    func resizeImage(image: UIImage?, targetSize: CGSize) -> UIImage? {
+        guard let image = image else { return nil }
+        let size = image.size
+
+        let widthRatio  = targetSize.width  / size.width
+        let heightRatio = targetSize.height / size.height
+
+        // Figure out what our orientation is, and use that to form the rectangle
+        var newSize: CGSize
+        if(widthRatio > heightRatio) {
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+        } else {
+            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+        }
+
+        // This is the rect that we've calculated out and this is what is actually used below
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+
+        // Actually do the resizing to the rect using the ImageContext stuff
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return newImage!
     }
 }
 

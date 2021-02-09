@@ -100,6 +100,14 @@ class PaswordVC: LoaderVC {
         
         self.subviews[self.curentNumber].becomeFirstResponder()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(clipboardChanged),
+                                                       name: UIPasteboard.changedNotification, object: nil)
+        
+    }
+    
+    @objc func clipboardChanged(){
+        
+        
     }
     
     func createField(number: Int) -> PaswordFiled{
@@ -113,12 +121,15 @@ class PaswordVC: LoaderVC {
         field.delegate = self
         field.keyboardType = .numberPad
         field.tintColor = UIColor.clear
+        field.delegate = self
+        field.textContentType = .oneTimeCode
         
         return field
     }
     
     @objc func textFieldTyping(textField:UITextField)
     {
+        guard textField.text?.count != 0  else { textField.becomeFirstResponder(); return }
         if textField.text?.count ?? 0 > 1 {
             textField.text?.removeFirst()
         }
@@ -128,7 +139,9 @@ class PaswordVC: LoaderVC {
         }
         textField.resignFirstResponder()
         self.codeisValid = false
+        
         self.curentNumber += 1
+        
         let textField = self.subviews[self.curentNumber]
         textField.becomeFirstResponder()
     }
@@ -236,7 +249,12 @@ class PaswordFiled: UITextField{
         self.deleteDelegate?.deleteBackward(of: self)
             super.deleteBackward()
         
-        }
+    }
+    
+    override func paste(_ sender: Any?) {
+        print("do someting")
+        super.paste(sender)
+    }
     
     
 }

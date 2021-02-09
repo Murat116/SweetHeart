@@ -18,7 +18,7 @@ class Purchases: NSObject {
     static let shared = Purchases()
     
     private let productIdentifiers = Set<String>(
-        arrayLiteral: "hopeTo.Sweetheart.five", "hopeTo.Sweetheart.trwentytwo", "hopeTo.Sweetheart.crazy" , "hopeTo.Sweetheart.fifty", "hopeTo.Sweetheart.hundreed", "hopeTo.Sweetheart.twoFifty", "hopeTo.Sweetheart.oneFiveZeroZero"
+        arrayLiteral: "hopeTo.Sweetheart.five", "hopeTo.Sweetheart.trwentytwo" , "hopeTo.Sweetheart.fifty", "hopeTo.Sweetheart.hundreed", "hopeTo.Sweetheart.twoFifty", "hopeTo.Sweetheart.oneFiveZeroZero"
     )
     
     private var products: [String: SKProduct]?
