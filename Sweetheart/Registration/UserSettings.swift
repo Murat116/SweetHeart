@@ -281,14 +281,17 @@ class UserRegistaration: UIViewController {
         self.state = state
     }
     
-    func sendRequest(_ url: String, parameters: [String: String], completion: @escaping ([String: Any]?, Error?) -> Void) {
+    func sendRequest(_ url: String, parameters: [String: String], body: Data? = nil, method: MethodType = .get, completion: @escaping ([String: Any]?, Error?) -> Void) {
         var components = URLComponents(string: url)!
         components.queryItems = parameters.map { (key, value) in
             URLQueryItem(name: key, value: value)
         }
         components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
-        let request = URLRequest(url: components.url!)
+        var request = URLRequest(url: components.url!)
 
+        request.httpMethod = method.rawValue
+        request.httpBody = body
+        
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data,                            // is there data
                 let response = response as? HTTPURLResponse,  // is there HTTP response
@@ -336,10 +339,8 @@ class UserRegistaration: UIViewController {
         
         if imgData != Datamanager.shared.curentUser?.imageData {
             
-            
-            let base64: String = imgData!.base64EncodedString(options: .lineLength64Characters)
-            var param = ["phone": String(Datamanager.shared.curentUser!.phone), "set" : base64 ]
-            self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param) { (value, error) in
+            let param = ["phone": String(Datamanager.shared.curentUser!.phone) ]
+            self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param, body: imgData, method: .post) { (value, error) in
                 guard error != nil else { return }
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
@@ -456,6 +457,11 @@ extension UserRegistaration: UIImagePickerControllerDelegate, UINavigationContro
 enum VCState{
     case view
     case edit
+}
+
+enum MethodType: String {
+    case post = "POST"
+    case get = "GET"
 }
 
 
