@@ -8,7 +8,7 @@
 import UIKit
 import PhoneNumberKit
 
-class SendHertsVC: UIViewController{
+class SendHertsVC: LoaderVC{
     
     var curentUser: UserModel {
         get {
@@ -43,12 +43,12 @@ class SendHertsVC: UIViewController{
     
     var maxHerts: Int {
         get{
-            return 1000000//Datamanager.shared.curentUser!.coins
+            return Datamanager.shared.curentUser!.coins
         }
     }
     var isFree: Bool {
         get{
-            guard let anotherUser = self.anotherUser else { return false}
+            guard let anotherUser = self.anotherUser else { return true}
             guard let votes = (self.curentUser.votesData?.jsonDictionary ?? [:])[anotherUser.phone] as? Int else { return true}
             return votes < 1
         }
@@ -106,7 +106,7 @@ class SendHertsVC: UIViewController{
             if self.textFieldType == .name, let user = self.anotherUser
             {
                 self.textField.text = user.name
-                let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+                let image = user.imageData != nil && !(user.imageData?.isEmpty ?? true) ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
                 self.avatarView.image = image
                 self.name.text = user.name
                 self.insta.text = user.instagram
@@ -336,7 +336,7 @@ class SendHertsVC: UIViewController{
         self.textField.attributedPlaceholder = NSAttributedString(string: "Номер пользователя", attributes: [NSAttributedString.Key.foregroundColor : UIColor(r: 114, g: 114, b: 114) ])
         self.phomeTypeBtn.backgroundColor = UIColor(r: 255, g: 219, b: 208)
         self.phomeTypeBtn.setTitleColor(UIColor(r: 222, g: 65, b: 16), for: .normal)
-        let image = user.imageData != nil ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
+        let image = user.imageData != nil && !(user.imageData?.isEmpty ?? true) ? UIImage(data: user.imageData!) : UIImage(named: "avatar")
         self.avatarView.image = image
         self.getUser(value: nil)
         
@@ -345,15 +345,46 @@ class SendHertsVC: UIViewController{
     @objc func sendSms(){
         guard let anotherUser = self.anotherUser else { return }
         let valentines = anotherUser.valentines + self.countHerts
-        Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
-        if !self.isFree || self.countHerts > 1{
-            let valent = self.curentUser.coins - self.countHerts + (self.isFree ? 1 : 0)
-            Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.coins))
+        
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=\(String(self.curentUser.phone))&votedfor=\(String(anotherUser.phone))&likes=\(self.countHerts)") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
         }
-        var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
-        votes[anotherUser.phone] = 1
-        Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
-        self.navigationController?.popViewController(animated: true)
+        
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                Datamanager.shared.updateProperty(of: anotherUser, value:valentines , for: #keyPath(UserModel.valentines))
+                //если у пользователя нет бесплатного лайка или общее количество лайков больше одного значит он использует доанытные
+                if !self.isFree || self.countHerts > 1{
+                    //из баланса списываем количество отправленных лайков - 1(если есть бесплатный лайк)
+                    let valent = self.curentUser.coins - self.countHerts + (self.isFree ? 1 : 0)
+                    Datamanager.shared.updateProperty(of: self.curentUser, value: valent,  for: #keyPath(UserModel.coins))
+                    
+                }
+                
+                var votes = self.curentUser.votesData?.jsonDictionary ?? [:]
+                votes[anotherUser.phone] = 1
+                Datamanager.shared.updateProperty(of: self.curentUser, value: votes.jsonData as Any, for: #keyPath(UserModel.votesData))
+                self.navigationController?.popViewController(animated: true)
+            }
+        }
+        
+        task.resume()
+        
+    }
+    
+    func changeuserCoins(){
+        //        https://valentinkilar.herokuapp.com/userUpdate
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
@@ -442,36 +473,108 @@ class SendHertsVC: UIViewController{
     }
     
     func getUser(value: String?){
-        
-        //send user -> get user
-        if value != nil {
-            self.anotherUser = Datamanager.shared.createUser(with: value!, type: .another) //test
-        }
-        
-        if self.isFree || self.maxHerts >= 1{
-            self.countHerts = 1
+        let string: String
+        if self.textFieldType == .id{
+            string = "https://valentinkilar.herokuapp.com/userGet?uuid=\(String((value ?? self.anotherUser?.id)!))"
         }else{
-            self.countHerts = 0
+            string =  "https://valentinkilar.herokuapp.com/userGet?phone=\(String((value ?? self.anotherUser?.phone)!))"
         }
         
-        self.checkColors(oldValue: self.countHerts)
+        guard let url = URL(string: string) else { return }
+//        https://valentinkilar.herokuapp.com/photo?phone=79956881638&get=1
+        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String((value ?? self.anotherUser?.phone)!))&get=1") else { return }
         
-        guard self.countHerts != 0 else { return }
         
-        self.countLabel.textColor = UIColor(r: 255, g: 95, b: 45)
-        self.minusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.plusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                    self.hideSpinner()
+                }
+                return
+            }
+            
+            guard let jsoon = data?.jsonDictionary, let phone = jsoon["Phone"] as? Int else {
+                self.anotherUser = UserModel.createUser(phone: value!, type: .another)
+                self.usergeteed()
+                self.hideSpinner()
+                return
+            }
+            DispatchQueue.main.async {
+                let user = UserModel.createUser(phone: String(phone), type: .another)
+                user.name = jsoon["Name"] as? String
+                user.instagram = jsoon["Insta"] as? String
+                self.anotherUser = user
+                
+                self.usergeteed()
+            }
+            
+            let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
+                guard error == nil else {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                        self.present(alert, animated: true)
+                        self.hideSpinner()
+                    }
+                    return
+                }
+                
+                guard let json = data?.jsonDictionary,
+                      let byteArray = json["Photo"] as? String,
+                      let data =  NSData(base64Encoded: byteArray, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters)  else {self.hideSpinner(); return }
+                
+                DispatchQueue.main.async {
+                    self.avatarView.image = UIImage(data: data as Data)
+                    self.hideSpinner()
+                }
+            }
+            taskImage.resume()
+        }
         
-        self.sendBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
-        self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
+        if value == nil {
+            self.usergeteed()
+        }else {
+            self.showSpinner()
+            task.resume()
+        }
         
-        guard value != nil else { return }
-        self.name.text = "Саня"
-        self.insta.text = "@pepa_desh"
-        self.avatarView.image = UIImage(named: "testPhoto")
-        self.name.isHidden = false
-        self.insta.isHidden = false
+    }
+    
+    func usergeteed(){
+        DispatchQueue.main.async {
+            
+            if self.isFree || self.maxHerts >= 1{
+                self.countHerts = 1
+            }else{
+                self.countHerts = 0
+            }
+            
+            self.checkColors(oldValue: self.countHerts)
+            
+            guard self.countHerts != 0 else { return }
+            
+            self.countLabel.textColor = UIColor(r: 255, g: 95, b: 45)
+            self.minusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            self.plusBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            
+            self.sendBtn.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+            self.sendBtn.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+            self.sendBtn.tintColor = UIColor(r: 255, g: 95, b: 45)
+            
+            if let name = self.anotherUser?.name{
+                self.name.text = name
+            }
+            if self.anotherUser?.name == nil, self.textField.text == nil {
+                self.textField.text = "Незнакомец"
+            }
+            self.insta.text = self.anotherUser?.instagram ?? (self.anotherUser == nil ? "Мы уведомим о вашей отправленной валентики" : "")
+            self.avatarView.image = self.anotherUser?.imageData != nil && !(self.anotherUser?.imageData?.isEmpty ?? true) && self.anotherUser != nil ? UIImage(data: self.anotherUser!.imageData!) : UIImage(named: "avatar")
+            self.name.isHidden = false
+            self.insta.isHidden = false
+        }
     }
     
     func checkColors(oldValue: Int){
@@ -521,8 +624,9 @@ extension SendHertsVC: Conactdelegate{
     func getConact(name: String, phone: String) {
         do{
             let phone = try PhoneNumberKit().parse(phone)
-            let number = phone.numberString
+            let number = String(phone.countryCode) + String(phone.nationalNumber)
             self.textField.text = number
+            self.name.text = name
             self.getUser(value: number)
         }catch{
             let alert = UIAlertController(title: "Неправильный формат номера", message: "Выберите другой или введите позже", preferredStyle: .alert)
@@ -541,7 +645,7 @@ extension SendHertsVC: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text){
+        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text), self.textField.text?.first == "+"{
             self.getUser(value: text)
             return true
         }

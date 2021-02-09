@@ -78,7 +78,7 @@ class UserRegistaration: UIViewController {
         self.avatarView.layer.masksToBounds = false
         self.avatarView.clipsToBounds = true
         
-        let image = self.userModel.imageData != nil ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
+        let image = self.userModel.imageData != nil && !(self.userModel.imageData?.isEmpty ?? true) ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.avatarView.image = image
         
         self.view.addSubview(self.avatarBtn)
@@ -281,6 +281,29 @@ class UserRegistaration: UIViewController {
         self.state = state
     }
     
+    func sendRequest(_ url: String, parameters: [String: String], completion: @escaping ([String: Any]?, Error?) -> Void) {
+        var components = URLComponents(string: url)!
+        components.queryItems = parameters.map { (key, value) in
+            URLQueryItem(name: key, value: value)
+        }
+        components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+        let request = URLRequest(url: components.url!)
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data,                            // is there data
+                let response = response as? HTTPURLResponse,  // is there HTTP response
+                (200 ..< 300) ~= response.statusCode,         // is statusCode 2XX
+                error == nil else {                           // was there no error, otherwise ...
+                    completion(nil, error)
+                    return
+            }
+
+            let responseObject = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            completion(responseObject, nil)
+        }
+        task.resume()
+    }
+    
     @objc func edit(btn: UIButton){
         guard !self.isUserInit else {
             let vc = MainVC()
@@ -299,13 +322,57 @@ class UserRegistaration: UIViewController {
     @objc func save(){
         let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
         let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
-        Datamanager.shared.updateProperty(of: self.userModel, value: name, for: #keyPath(UserModel.name))
-        Datamanager.shared.updateProperty(of: self.userModel, value: insta, for: #keyPath(UserModel.instagram))
-        Datamanager.shared.updateProperty(of: self.userModel, value: self.avatarView.image?.pngData() as Any, for: #keyPath(UserModel.imageData))
-        self.saveBtn.isHidden = true
-        self.cancel.isHidden = true
-        self.editbtn.isHidden = false
-        self.state = .view
+        let imgData = self.resizeImage(image: self.avatarView.image, targetSize: CGSize(width: 100, height: 100))?.pngData()
+        
+        var parameters = [String: String]()
+        if name != Datamanager.shared.curentUser?.name {
+            parameters["name"] = name
+        }
+        
+        if insta != Datamanager.shared.curentUser?.instagram {
+            parameters["name"] = name
+            parameters["insta"] = name
+        }
+        
+        if imgData != Datamanager.shared.curentUser?.imageData {
+            
+            
+            let base64: String = imgData!.base64EncodedString(options: .lineLength64Characters)
+            var param = ["phone": String(Datamanager.shared.curentUser!.phone), "set" : base64 ]
+            self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param) { (value, error) in
+                guard error != nil else { return }
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                }
+                print("everythingISOk")
+            }
+        }
+        
+        parameters["phone"] = Datamanager.shared.curentUser?.phone
+        
+        self.sendRequest("https://valentinkilar.herokuapp.com/userUpdate", parameters: parameters) { (_, error) in
+            guard error != nil else { return }
+            let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
+        }
+        
+        DispatchQueue.main.async {
+            Datamanager.shared.updateProperty(of: self.userModel, value: name!, for: #keyPath(UserModel.name))
+            Datamanager.shared.updateProperty(of: self.userModel, value: insta!, for: #keyPath(UserModel.instagram))
+            if imgData != nil {
+                Datamanager.shared.updateProperty(of: self.userModel, value: imgData!, for: #keyPath(UserModel.imageData))
+            }
+            
+            self.saveBtn.isHidden = true
+            self.cancel.isHidden = true
+            self.editbtn.isHidden = false
+            self.state = .view
+        }
+        
         guard self.isUserInit else { return }
         let vc = MainVC()
         let navigationViewController = UINavigationController(rootViewController: vc)
@@ -338,6 +405,33 @@ extension UserRegistaration: UITextFieldDelegate{
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         
+    }
+    
+    func resizeImage(image: UIImage?, targetSize: CGSize) -> UIImage? {
+        guard let image = image else { return nil }
+        let size = image.size
+
+        let widthRatio  = targetSize.width  / size.width
+        let heightRatio = targetSize.height / size.height
+
+        // Figure out what our orientation is, and use that to form the rectangle
+        var newSize: CGSize
+        if(widthRatio > heightRatio) {
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+        } else {
+            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+        }
+
+        // This is the rect that we've calculated out and this is what is actually used below
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+
+        // Actually do the resizing to the rect using the ImageContext stuff
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return newImage!
     }
 }
 

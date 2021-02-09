@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PaswordVC: UIViewController {
+class PaswordVC: LoaderVC {
     
     var backBtn = UIButton()
     var weloomeLabel = UILabel()
@@ -100,6 +100,14 @@ class PaswordVC: UIViewController {
         
         self.subviews[self.curentNumber].becomeFirstResponder()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(clipboardChanged),
+                                                       name: UIPasteboard.changedNotification, object: nil)
+        
+    }
+    
+    @objc func clipboardChanged(){
+        
+        
     }
     
     func createField(number: Int) -> PaswordFiled{
@@ -113,12 +121,15 @@ class PaswordVC: UIViewController {
         field.delegate = self
         field.keyboardType = .numberPad
         field.tintColor = UIColor.clear
+        field.delegate = self
+        field.textContentType = .oneTimeCode
         
         return field
     }
     
     @objc func textFieldTyping(textField:UITextField)
     {
+        guard textField.text?.count != 0  else { textField.becomeFirstResponder(); return }
         if textField.text?.count ?? 0 > 1 {
             textField.text?.removeFirst()
         }
@@ -128,25 +139,83 @@ class PaswordVC: UIViewController {
         }
         textField.resignFirstResponder()
         self.codeisValid = false
+        
         self.curentNumber += 1
+        
         let textField = self.subviews[self.curentNumber]
         textField.becomeFirstResponder()
     }
     
     @objc func sendCode(){
-        var pasword = ""
-        for view in self.subviews where view is UITextField{
-            let view = view as! UITextField
-            pasword.append(view.text!)
+        var code: String = ""
+        for subview in self.subviews{
+            guard let tf = subview as? UITextField, let text = tf.text, text.count == 1 else { return }
+            code.append(text)
         }
-        guard pasword == "31415", self.phone == "+7 917 888-40-84" else { return }
-        Datamanager.shared.createUser(with: self.phone, type: .curent) {
-            let vc = UserRegistaration()
-            vc.configure(state: .edit, isUserInit: true)
-            self.navigationController?.pushViewController(vc, animated: true)
+        guard code.count == 5 else { return }
+        
+        guard let url = URL(string: "https://valentinkilar.herokuapp.com/phoneConfirm?phone=\(String(self.phone))&code=\(String(code))") else {
+            let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+            self.present(alert, animated: true)
+            return
         }
+        
+        self.showSpinner()
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil , (response as? HTTPURLResponse)?.statusCode == 200 else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                    self.hideSpinner()
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                guard let json = data?.jsonDictionary,
+                      let phone = json["Phone"] as? Int,
+                      let id = json["UUID"] as? String else { return }
+                
+                let user  = UserModel.createUser(phone: String(phone), id: id, type: .curent)
+                
+                if let name = json["Name"] as? String{
+                    user.name = name
+                }
+                
+                if let like = json["Likes"] as? Int {
+                    user.valentines = like
+                }
+                
+                if let insta = json["Insta"] as? String {
+                    user.instagram = insta
+                }
+                
+                if let balance = json["Balance"] as? Int {
+                    user.coins = Int(balance)
+                }
+                
+                do{
+                    try Datamanager.shared.realm?.write{
+                        Datamanager.shared.realm?.add(user)
+                        let vc = UserRegistaration()
+                        vc.configure(state: .edit, isUserInit: true)
+                        self.navigationController?.pushViewController(vc, animated: true)
+                        self.hideSpinner()
+                    }
+                }catch{
+                    print(error)
+                }
+                
+            }
+        }
+
+        task.resume()
+        
+        
     }
-    
+
     @objc func back(){
         self.navigationController?.popViewController(animated: true)
     }
@@ -180,7 +249,12 @@ class PaswordFiled: UITextField{
         self.deleteDelegate?.deleteBackward(of: self)
             super.deleteBackward()
         
-        }
+    }
+    
+    override func paste(_ sender: Any?) {
+        print("do someting")
+        super.paste(sender)
+    }
     
     
 }

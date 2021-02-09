@@ -8,7 +8,7 @@
 import UIKit
 import StoreKit
 
-class BuyVC: UIViewController{
+class BuyVC: LoaderVC{
     
     var herts: Int {
         get{
@@ -29,19 +29,6 @@ class BuyVC: UIViewController{
             self.tableView.reloadData()
         }
     }
-    
-    lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
-        self.view.addSubview(view)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
-        view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
-        view.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        view.widthAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        
-        view.hidesWhenStopped = true
-        return view
-    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,15 +95,15 @@ class BuyVC: UIViewController{
         self.freeButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -32).isActive = true
         self.freeButton.heightAnchor.constraint(equalToConstant: 49).isActive = true
         
-        self.freeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
-        self.freeButton.layer.cornerRadius = 8
-        self.freeButton.semanticContentAttribute = .forceRightToLeft
-        self.freeButton.setTitle("Получить бесплатно", for: .normal)
-        self.freeButton.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.freeButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
-        self.freeButton.backgroundColor = UIColor(r: 255, g: 239, b: 234)
-        self.freeButton.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
-        self.freeButton.tintColor = UIColor(r: 255, g: 95, b: 45)
+//        self.freeButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
+//        self.freeButton.layer.cornerRadius = 8
+//        self.freeButton.semanticContentAttribute = .forceRightToLeft
+//        self.freeButton.setTitle("Получить бесплатно", for: .normal)
+//        self.freeButton.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
+//        self.freeButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 0)
+//        self.freeButton.backgroundColor = UIColor(r: 255, g: 239, b: 234)
+//        self.freeButton.setTitleColor(UIColor(r: 255, g: 95, b: 45), for: .normal)
+//        self.freeButton.tintColor = UIColor(r: 255, g: 95, b: 45)
         
         self.view.addSubview(self.tableView)
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -130,24 +117,15 @@ class BuyVC: UIViewController{
         self.tableView.dataSource = self
         
         self.tableView.register(BuyCell.self, forCellReuseIdentifier: "BuyCell")
+        
+        self.tableView.showsVerticalScrollIndicator = false
     }
     
     @objc func back(){
         self.navigationController?.popViewController(animated: true)
     }
     
-    func showSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.startAnimating()
-            self.activityIndicator.isHidden = false
-        }
-    }
-    
-    func hideSpinner() {
-        DispatchQueue.main.async {
-            self.activityIndicator.stopAnimating()
-        }
-    }
+   
     
     private func updateInterface(products: [SKProduct]) {
         var model = products
@@ -172,23 +150,36 @@ extension BuyVC: UITableViewDataSource, UITableViewDelegate{
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        showSpinner()
+        self.showSpinner()
         Purchases.shared.purchaseProduct(productId: TypeOfSell.allCases[indexPath.row].rawValue) { [weak self] result in
             self?.hideSpinner()
             switch result {
             case .success(let suc):
                 guard suc else { return }
                 guard let user = Datamanager.shared.curentUser else { return }
-                var coins  = user.coins
-                coins += TypeOfSell.allCases[indexPath.row].count
+                let coins  = TypeOfSell.allCases[indexPath.row].count
+                
+                let url = URL(string: "https://valentinkilar.herokuapp.com/userUpdate?phone=\(String(Datamanager.shared.curentUser!.phone))&balanceoperation=plus&balance=\(coins)")
+                let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
+                    guard error == nil else {
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                            self!.present(alert, animated: true)
+                        }
+                        return
+                    }
+                }
+                task.resume()
                 Datamanager.shared.updateProperty(of: user, value: coins, for: #keyPath(UserModel.coins))
                 self?.balance.setTitle(String(coins), for: .normal)
             case .failure(let error):
-                let alert = UIAlertController(title: "Сбой в обишки покуки", message: error.localizedDescription, preferredStyle: .alert)
+                let alert = UIAlertController(title: "Сбой в покуки", message: error.localizedDescription, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default))
                 self?.present(alert, animated: true, completion: nil)
             }
         }
+        
     }
     
 }
@@ -265,7 +256,7 @@ enum TypeOfSell: String, CaseIterable{
     case hundred = "hopeTo.Sweetheart.hundreed"
     case twoFifty = "hopeTo.Sweetheart.twoFifty"
     case fiveFundred = "hopeTo.Sweetheart.oneFiveZeroZero"
-    case crazy = "hopeTo.Sweetheart.crazy"
+//    case crazy = "hopeTo.Sweetheart.crazy"
     
     var count : Int  {
         switch self {
@@ -281,8 +272,8 @@ enum TypeOfSell: String, CaseIterable{
             return 250
         case .fiveFundred:
             return  500
-        case .crazy:
-            return 30000
+//        case .crazy:
+//            return 30000
         }
     }
 }
@@ -306,6 +297,37 @@ extension SKProduct {
             return "Annual Subscription"
         default:
             return nil
+        }
+    }
+}
+
+class LoaderVC: UIViewController{
+    lazy var activityIndicator: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        self.view.addSubview(view)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        view.widthAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        
+        view.hidesWhenStopped = true
+        return view
+    }()
+    
+    
+    open func showSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+            self.view.isUserInteractionEnabled = false
+            self.activityIndicator.isHidden = false
+        }
+    }
+    
+    open func hideSpinner() {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.view.isUserInteractionEnabled = true
         }
     }
 }

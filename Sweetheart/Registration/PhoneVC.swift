@@ -8,7 +8,7 @@
 import UIKit
 import PhoneNumberKit
 
-class PhoneVC: UIViewController{
+class PhoneVC: LoaderVC{
     var weloomeLabel = UILabel()
     var phoneFiled = MyGBTextField()
     let phomeNumberKit = PhoneNumberKit()
@@ -92,10 +92,45 @@ class PhoneVC: UIViewController{
     }
     
     @objc func sendCode(){
-        guard self.phomeIsValid else { return }
-        let vc = PaswordVC()
-        vc.phone = self.phoneFiled.phoneNumber?.numberString
-        self.navigationController?.pushViewController(vc, animated: true)
+        guard self.phomeIsValid, let number = self.phoneFiled.phoneNumber?.nationalNumber, let code = self.phoneFiled.phoneNumber?.countryCode else { return }
+        
+        self.showSpinner()
+        let url = URL(string: "https://valentinkilar.herokuapp.com/smsSend?phone=\(code)\(number)")!
+
+
+        if  let date = UserDefaults.standard.value(forKey: "SenCode") as? Date {
+            let dateInteval = Date().timeIntervalSince(date)
+            guard dateInteval >= 300 else {
+                let alert = UIAlertController(title: "Вы привысили кол-во запросов", message: "", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                self.present(alert, animated: true)
+                self.hideSpinner()
+                return
+            }
+        }
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            guard error == nil, (response as? HTTPURLResponse)?.statusCode == 200 else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Неправильный формат номера", message: error?.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                    self.present(alert, animated: true)
+                    self.hideSpinner()
+                }
+                return
+            }
+            let time = Date()
+            UserDefaults.standard.setValue(time, forKeyPath: "SenCode")
+            DispatchQueue.main.async {
+                let vc = PaswordVC()
+                vc.phone = "\(code)\(number)"
+                self.navigationController?.pushViewController(vc, animated: true)
+                self.hideSpinner()
+            }
+        }
+//
+        task.resume()
+
     }
     
     @objc func textFieldTyping(textField:UITextField)
