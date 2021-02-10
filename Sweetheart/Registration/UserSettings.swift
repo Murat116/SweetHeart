@@ -334,19 +334,20 @@ class UserRegistaration: LoaderVC {
         }
         
         if insta != Datamanager.shared.curentUser?.instagram {
-            parameters["name"] = name
-            parameters["insta"] = name
+            parameters["insta"] = insta
         }
         
-        if imgData != Datamanager.shared.curentUser?.imageData {
+        let userData = Datamanager.shared.curentUser?.imageData
+        if imgData != userData {
             
             let param = ["phone": String(Datamanager.shared.curentUser!.phone) ]
             self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param, body: imgData, method: .post) { (value, error) in
-                guard error != nil else { return }
+                guard error != nil else { self.hideSpinner(); return }
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
                     self.present(alert, animated: true)
+                    self.hideSpinner()
                 }
                 print("everythingISOk")
             }
@@ -356,13 +357,14 @@ class UserRegistaration: LoaderVC {
         
         self.sendRequest("https://valentinkilar.herokuapp.com/userUpdate", parameters: parameters) { (_, error) in
             guard error != nil else {
-                guard imgData == Datamanager.shared.curentUser?.imageData else { return }
+                guard imgData == userData else { return }
                 self.hideSpinner()
                 return
             }
             let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ок", style: .default))
             self.present(alert, animated: true)
+            self.hideSpinner()
             return
         }
         
