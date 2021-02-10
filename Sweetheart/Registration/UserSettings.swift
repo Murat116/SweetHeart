@@ -7,7 +7,7 @@
 
 import UIKit
 
-class UserRegistaration: UIViewController {
+class UserRegistaration: LoaderVC {
     var backBtn = UIButton()
     
     var avatarView = UIImageView()
@@ -320,6 +320,7 @@ class UserRegistaration: UIViewController {
     }
     
     @objc func save(){
+        self.showSpinner()
         let name = self.nameField.text?.isEmpty ?? true ? self.userModel.name ?? "User" :  self.nameField.text
         let insta = self.instField.text?.isEmpty ?? true ? self.userModel.instagram ?? "Hello friends" : self.instField.text
         let imgData = self.resizeImage(image: self.avatarView.image, targetSize: CGSize(width: 100, height: 100))?.pngData()
@@ -335,12 +336,10 @@ class UserRegistaration: UIViewController {
         }
         
         if imgData != Datamanager.shared.curentUser?.imageData {
-            
-            
             let base64: String = imgData!.base64EncodedString(options: .lineLength64Characters)
             var param = ["phone": String(Datamanager.shared.curentUser!.phone), "set" : base64 ]
             self.sendRequest("https://valentinkilar.herokuapp.com/photo", parameters: param) { (value, error) in
-                guard error != nil else { return }
+                guard error != nil else { self.hideSpinner(); return }
                 DispatchQueue.main.async {
                     let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
@@ -353,7 +352,11 @@ class UserRegistaration: UIViewController {
         parameters["phone"] = Datamanager.shared.curentUser?.phone
         
         self.sendRequest("https://valentinkilar.herokuapp.com/userUpdate", parameters: parameters) { (_, error) in
-            guard error != nil else { return }
+            guard error != nil else {
+                guard imgData == Datamanager.shared.curentUser?.imageData else { return }
+                self.hideSpinner()
+                return
+            }
             let alert = UIAlertController(title: "Неправильный код", message: error?.localizedDescription, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ок", style: .default))
             self.present(alert, animated: true)
