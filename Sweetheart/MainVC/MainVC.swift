@@ -136,6 +136,9 @@ class MainVC: UIViewController{
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
            refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
            tableView.addSubview(refreshControl)
+        
+        guard self.alluser.count <= 3 else { return }
+        self.refresh(refreshControl)
     }
     
     override func viewWillAppear(_ animated: Bool) {
