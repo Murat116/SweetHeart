@@ -645,7 +645,8 @@ extension SendHertsVC: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        if let text = textField.text, PhoneNumberKit().isValidPhoneNumber(text), self.textField.text?.first == "+"{
+        if var text = textField.text, PhoneNumberKit().isValidPhoneNumber(text), self.textField.text?.first == "+"{
+            text.removeFirst()
             self.getUser(value: text)
             return true
         }

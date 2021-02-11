@@ -237,9 +237,7 @@ class MainVC: UIViewController{
                             return
                         }
                         
-                        guard let json = data?.jsonDictionary,
-                              let byteArray = json["Photo"] as? String,
-                              let data = Data(base64Encoded: byteArray)  else { return }
+                        guard let data = data else { return }
                         
                         
                         DispatchQueue.main.async {
