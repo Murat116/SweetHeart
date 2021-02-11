@@ -522,12 +522,12 @@ class SendHertsVC: LoaderVC{
                     return
                 }
                 
-                guard let json = data?.jsonDictionary,
-                      let byteArray = json["Photo"] as? String,
-                      let data =  NSData(base64Encoded: byteArray, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters)  else {self.hideSpinner(); return }
-                
+//                guard let json = data?.jsonDictionary,
+//                      let byteArray = json["Photo"] as? String,
+//                      let data =  NSData(base64Encoded: byteArray, options: NSData.Base64DecodingOptions.ignoreUnknownCharacters)  else
+                guard let data = data else {self.hideSpinner(); return }
                 DispatchQueue.main.async {
-                    self.avatarView.image = UIImage(data: data as Data)
+                    self.avatarView.image = UIImage(data: data)
                     self.hideSpinner()
                 }
             }
