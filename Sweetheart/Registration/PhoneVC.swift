@@ -101,8 +101,15 @@ class PhoneVC: LoaderVC{
         if  let date = UserDefaults.standard.value(forKey: "SenCode") as? Date {
             let dateInteval = Date().timeIntervalSince(date)
             guard dateInteval >= 300 else {
-                let alert = UIAlertController(title: "Вы привысили кол-во запросов", message: "", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                let alert = UIAlertController(title: "Вы превысили кол-во запросов", message: "Повторить запрос кода можно через 5 минут", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ок", style: .cancel))
+                alert.addAction(UIAlertAction(title: "У меня уже есть код", style: .default, handler: { (_) in
+                    let vc = PaswordVC()
+                    vc.phone = "\(code)\(number)"
+                    self.navigationController?.pushViewController(vc, animated: true)
+                    self.hideSpinner()
+                }))
+                
                 self.present(alert, animated: true)
                 self.hideSpinner()
                 return
@@ -112,7 +119,7 @@ class PhoneVC: LoaderVC{
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
             guard error == nil, (response as? HTTPURLResponse)?.statusCode == 200 else {
                 DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Неправильный формат номера", message: error?.localizedDescription, preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Ошибка отправки данных", message: error?.localizedDescription, preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "Ок", style: .default))
                     self.present(alert, animated: true)
                     self.hideSpinner()

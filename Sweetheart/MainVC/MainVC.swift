@@ -51,7 +51,7 @@ class MainVC: UIViewController{
         self.meBtn.addTarget(self, action: #selector(self.openMeView), for: .touchUpInside)
         let image = self.userModel.imageData != nil && !(self.userModel.imageData?.isEmpty ?? true) ? UIImage(data: self.userModel.imageData!) : UIImage(named: "avatar")
         self.meBtn.setImage(image, for: .normal)
-    
+        
         self.meBtn.contentEdgeInsets = .zero
         self.meBtn.imageView?.contentMode = .scaleAspectFit
         self.meBtn.layer.masksToBounds = true
@@ -63,8 +63,8 @@ class MainVC: UIViewController{
         self.balance.translatesAutoresizingMaskIntoConstraints = false
         self.balance.centerYAnchor.constraint(equalTo: self.myName.centerYAnchor).isActive = true
         self.balance.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 32).isActive = true
-//        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
-//        self.balance.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        //        self.balance.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        //        self.balance.widthAnchor.constraint(equalToConstant: 100).isActive = true
         
         self.balance.contentHorizontalAlignment = .left
         
@@ -127,15 +127,15 @@ class MainVC: UIViewController{
         self.sendBtn.setImage(UIImage(named: "Hearts")?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.sendBtn.imageView?.tintColor = UIColor(r: 255, g: 248, b: 235)
         self.sendBtn.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
-
+        
         self.sendBtn.addTarget(self, action: #selector(self.sendMsg), for: .touchUpInside)
-
+        
         self.view.layoutIfNeeded()
         self.meBtn.layer.cornerRadius = self.meBtn.frame.height / 2
         
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
-           refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
-           tableView.addSubview(refreshControl)
+        refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+        tableView.addSubview(refreshControl)
         
         guard self.alluser.count <= 3 else { return }
         self.refresh(refreshControl)
@@ -151,21 +151,21 @@ class MainVC: UIViewController{
         
         guard let userModel = Datamanager.shared.curentUser else { return }
         guard let urluser = URL(string: "https://valentinkilar.herokuapp.com/userGet?phone=\(String(userModel.phone))") else { return }
-
+        
         let taskUser = URLSession.shared.dataTask(with: urluser) {(data, response, error) in
             guard error == nil else { return }
             
             guard let json = data?.jsonDictionary else { return  }
             DispatchQueue.main.async {
-            if let name = json["Name"] as? String, name != userModel.name {
+                if let name = json["Name"] as? String, name != userModel.name {
                     Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.name))
                 }
                 
                 if let name = json["Balance"] as? Float, name != Float(userModel.coins) {
                     Datamanager.shared.updateProperty(of: userModel, value: Int(name), for: #keyPath(UserModel.coins))
-                    self.balance.setTitle(String(name), for: .normal)
+                    self.balance.setTitle(String(Int(name)), for: .normal)
                 }
-            
+                
                 if let name = json["Likes"] as? Int, name != userModel.valentines {
                     Datamanager.shared.updateProperty(of: userModel, value: name, for: #keyPath(UserModel.valentines ))
                 }
@@ -177,7 +177,7 @@ class MainVC: UIViewController{
             }
         }
         taskUser.resume()
-
+        
         guard let url = URL(string: "https://valentinkilar.herokuapp.com/userGet?all=1") else {
             let alert = UIAlertController(title: "Неправильный код", message: "error in code send", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ок", style: .default))
@@ -194,7 +194,7 @@ class MainVC: UIViewController{
                 }
                 return
             }
-            guard let data = dataAttay, let dict: [[String: Any]] = data.elements() else { return }
+            guard let data = dataAttay, let array = data.elements() else { return }
             DispatchQueue.main.async {
                 for user in self.alluser where user.type != .curent {
                     do{
@@ -205,8 +205,9 @@ class MainVC: UIViewController{
                         print(error)
                     }
                 }
-    
-                for value in dict{
+                
+                for value in array where value is [String: Any]{
+                    guard let value = value as? [String: Any] else { continue }
                     guard let phone = value["Phone"] as? Int,String(phone) != self.userModel.phone, let like = value["Likes"] as? Int else { continue }
                     let user = UserModel.createUser(phone: String(phone), type: .another)
                     user.valentines = like
@@ -254,7 +255,7 @@ class MainVC: UIViewController{
                 self.refreshControl.endRefreshing()
             }
         }
-
+        
         task.resume()
     }
     
@@ -302,7 +303,7 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate{
 
 
 extension Data {
-    func elements () -> [[String:Any]]? {
-        return try! JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]]
+    func elements () -> [Any]? {
+        return try? JSONSerialization.jsonObject(with: self, options: []) as? [Any]
     }
 }

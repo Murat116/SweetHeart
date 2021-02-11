@@ -482,7 +482,6 @@ class SendHertsVC: LoaderVC{
         
         guard let url = URL(string: string) else { return }
 //        https://valentinkilar.herokuapp.com/photo?phone=79956881638&get=1
-        guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(String((value ?? self.anotherUser?.phone)!))&get=1") else { return }
         
         
         let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
@@ -510,7 +509,7 @@ class SendHertsVC: LoaderVC{
                 
                 self.usergeteed()
             }
-            
+            guard let urlImg = URL(string: "https://valentinkilar.herokuapp.com/photo?phone=\(phone)&get=1") else { return }
             let taskImage = URLSession.shared.dataTask(with: urlImg) {(data, response, error) in
                 guard error == nil else {
                     DispatchQueue.main.async {
